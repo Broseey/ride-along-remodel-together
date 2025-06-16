@@ -354,6 +354,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
         amount={calculatedPrice + 500} // Add booking fee
         email={user?.email || ""}
         onSuccess={handlePaymentSuccess}
+        onClose={() => setShowPayment(false)}
         onCancel={() => setShowPayment(false)}
         rideDetails={{
           from: formData.from,
