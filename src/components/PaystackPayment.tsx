@@ -8,7 +8,15 @@ interface PaystackPaymentProps {
   amount: number;
   onSuccess: (reference: string) => void;
   onClose: () => void;
-  reference: string;
+  onCancel?: () => void;
+  reference?: string;
+  rideDetails?: {
+    from: string;
+    to: string;
+    date: string;
+    time: string;
+    passengers: number;
+  };
 }
 
 const PaystackPayment: React.FC<PaystackPaymentProps> = ({
@@ -16,7 +24,9 @@ const PaystackPayment: React.FC<PaystackPaymentProps> = ({
   amount,
   onSuccess,
   onClose,
-  reference
+  onCancel,
+  reference = `ref_${Date.now()}`,
+  rideDetails
 }) => {
   useEffect(() => {
     const script = document.createElement('script');
@@ -25,7 +35,9 @@ const PaystackPayment: React.FC<PaystackPaymentProps> = ({
     document.body.appendChild(script);
 
     return () => {
-      document.body.removeChild(script);
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
     };
   }, []);
 
@@ -43,7 +55,11 @@ const PaystackPayment: React.FC<PaystackPaymentProps> = ({
         },
         onClose: function() {
           toast.error('Payment cancelled');
-          onClose();
+          if (onCancel) {
+            onCancel();
+          } else {
+            onClose();
+          }
         }
       });
       handler.openIframe();
@@ -53,12 +69,41 @@ const PaystackPayment: React.FC<PaystackPaymentProps> = ({
   };
 
   return (
-    <Button 
-      onClick={handlePayment}
-      className="w-full bg-green-600 hover:bg-green-700 text-white"
-    >
-      Pay ₦{amount.toLocaleString()}
-    </Button>
+    <div className="p-6 max-w-md mx-auto">
+      {rideDetails && (
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+          <h3 className="font-semibold mb-2">Booking Summary</h3>
+          <div className="space-y-1 text-sm">
+            <p><span className="font-medium">From:</span> {rideDetails.from}</p>
+            <p><span className="font-medium">To:</span> {rideDetails.to}</p>
+            <p><span className="font-medium">Date:</span> {rideDetails.date}</p>
+            <p><span className="font-medium">Time:</span> {rideDetails.time}</p>
+            <p><span className="font-medium">Passengers:</span> {rideDetails.passengers}</p>
+          </div>
+        </div>
+      )}
+      
+      <div className="mb-4">
+        <p className="text-lg font-semibold">Total Amount: ₦{amount.toLocaleString()}</p>
+      </div>
+
+      <div className="space-y-3">
+        <Button 
+          onClick={handlePayment}
+          className="w-full bg-green-600 hover:bg-green-700 text-white"
+        >
+          Pay ₦{amount.toLocaleString()}
+        </Button>
+        
+        <Button 
+          onClick={onCancel || onClose}
+          variant="outline"
+          className="w-full"
+        >
+          Cancel
+        </Button>
+      </div>
+    </div>
   );
 };
 

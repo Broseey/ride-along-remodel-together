@@ -39,7 +39,18 @@ const RideRequestForm = () => {
   });
 
   const onSubmit = async (data: FormData) => {
-    createRideRequest.mutate(data, {
+    // Ensure all required fields are present
+    const requestData = {
+      from_location: data.from_location,
+      to_location: data.to_location,
+      preferred_date: data.preferred_date,
+      preferred_time: data.preferred_time,
+      seats_needed: data.seats_needed,
+      max_price: data.max_price,
+      description: data.description || '',
+    };
+
+    createRideRequest.mutate(requestData, {
       onSuccess: () => {
         reset();
       }
@@ -129,7 +140,10 @@ const RideRequestForm = () => {
               <Input
                 id="max_price"
                 type="number"
-                {...register('max_price', { valueAsNumber: true })}
+                {...register('max_price', { 
+                  valueAsNumber: true,
+                  setValueAs: (value) => value === '' ? undefined : Number(value)
+                })}
                 placeholder="Optional"
               />
             </div>
