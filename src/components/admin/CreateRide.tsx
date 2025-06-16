@@ -1,276 +1,222 @@
 
-import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Plus, MapPin, Calendar, Clock, Users, DollarSign } from "lucide-react";
-import { toast } from "sonner";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Car } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
-// Nigerian locations data
-const nigerianLocations = {
-  universities: [
-    "Babcock University, Ilishan-Remo",
-    "Afe Babalola University, Ado-Ekiti",
-    "Redeemer's University, Ede",
-    "Bowen University, Iwo",
-    "Covenant University, Ota",
-    "Lead City University, Ibadan",
-    "Pan-Atlantic University, Lagos",
-    "Landmark University, Omu-Aran",
-    "American University of Nigeria, Yola"
-  ],
-  states: [
-    "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", 
-    "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", 
-    "FCT - Abuja", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", 
-    "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", 
-    "Osun", "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"
-  ]
-};
+const formSchema = z.object({
+  from_location: z.string().min(1, 'From location is required'),
+  to_location: z.string().min(1, 'To location is required'),
+  departure_date: z.string().min(1, 'Departure date is required'),
+  departure_time: z.string().min(1, 'Departure time is required'),
+  total_seats: z.number().min(1, 'At least 1 seat is required').max(50, 'Maximum 50 seats'),
+  price: z.number().min(1, 'Price must be greater than 0'),
+  vehicle_type: z.string().min(1, 'Vehicle type is required'),
+  pickup_location: z.string().optional(),
+  description: z.string().optional(),
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 const CreateRide = () => {
-  const [formData, setFormData] = useState({
-    fromLocation: '',
-    toLocation: '',
-    departureDate: '',
-    departureTime: '',
-    totalSeats: '',
-    price: '',
-    vehicleType: '',
-    description: ''
+  const queryClient = useQueryClient();
+  
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors, isSubmitting }
+  } = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      total_seats: 6,
+      price: 0,
+    }
   });
 
-  const queryClient = useQueryClient();
+  const createRide = useMutation({
+    mutationFn: async (data: FormData) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
 
-  const createRideMutation = useMutation({
-    mutationFn: async (rideData: any) => {
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-
-      const { data, error } = await supabase
+      const { data: rideData, error } = await supabase
         .from('rides')
-        .insert([{
-          from_location: rideData.fromLocation,
-          to_location: rideData.toLocation,
-          departure_date: rideData.departureDate,
-          departure_time: rideData.departureTime,
-          seats_requested: parseInt(rideData.totalSeats),
-          price: parseFloat(rideData.price),
+        .insert({
+          ...data,
+          user_id: user.id,
+          available_seats: data.total_seats,
           booking_type: 'admin_created',
           status: 'available',
-          user_id: userData.user?.id,
-          vehicle_type: rideData.vehicleType,
-          description: rideData.description
-        }])
+          seats_requested: 0,
+        })
         .select()
         .single();
       
       if (error) throw error;
-      return data;
+      return rideData;
     },
     onSuccess: () => {
-      toast.success('Ride created successfully!');
       queryClient.invalidateQueries({ queryKey: ['admin-rides'] });
       queryClient.invalidateQueries({ queryKey: ['available-rides'] });
-      setFormData({
-        fromLocation: '',
-        toLocation: '',
-        departureDate: '',
-        departureTime: '',
-        totalSeats: '',
-        price: '',
-        vehicleType: '',
-        description: ''
-      });
+      toast.success('Ride created successfully!');
+      reset();
     },
-    onError: (error) => {
-      toast.error('Failed to create ride');
-      console.error('Error creating ride:', error);
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to create ride');
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.fromLocation || !formData.toLocation || !formData.departureDate || 
-        !formData.departureTime || !formData.totalSeats || !formData.price) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    createRideMutation.mutate(formData);
+  const onSubmit = async (data: FormData) => {
+    createRide.mutate(data);
   };
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const allLocations = [...nigerianLocations.universities, ...nigerianLocations.states];
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Plus className="h-5 w-5" />
+          <Car className="h-5 w-5" />
           Create New Ride
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="fromLocation">From Location *</Label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Select
-                  value={formData.fromLocation}
-                  onValueChange={(value) => handleInputChange('fromLocation', value)}
-                >
-                  <SelectTrigger className="pl-10">
-                    <SelectValue placeholder="Select departure location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allLocations.map((location) => (
-                      <SelectItem key={location} value={location}>{location}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div>
+              <Label htmlFor="from_location">From Location</Label>
+              <Input
+                id="from_location"
+                {...register('from_location')}
+                placeholder="e.g., Lagos"
+              />
+              {errors.from_location && (
+                <p className="text-sm text-red-600">{errors.from_location.message}</p>
+              )}
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="toLocation">To Location *</Label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Select
-                  value={formData.toLocation}
-                  onValueChange={(value) => handleInputChange('toLocation', value)}
-                >
-                  <SelectTrigger className="pl-10">
-                    <SelectValue placeholder="Select destination location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allLocations.map((location) => (
-                      <SelectItem key={location} value={location}>{location}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            
+            <div>
+              <Label htmlFor="to_location">To Location</Label>
+              <Input
+                id="to_location"
+                {...register('to_location')}
+                placeholder="e.g., University of Ibadan"
+              />
+              {errors.to_location && (
+                <p className="text-sm text-red-600">{errors.to_location.message}</p>
+              )}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="departureDate">Departure Date *</Label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="departureDate"
-                  type="date"
-                  value={formData.departureDate}
-                  onChange={(e) => handleInputChange('departureDate', e.target.value)}
-                  className="pl-10"
-                  required
-                />
-              </div>
+            <div>
+              <Label htmlFor="departure_date">Departure Date</Label>
+              <Input
+                id="departure_date"
+                type="date"
+                {...register('departure_date')}
+                min={new Date().toISOString().split('T')[0]}
+              />
+              {errors.departure_date && (
+                <p className="text-sm text-red-600">{errors.departure_date.message}</p>
+              )}
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="departureTime">Departure Time *</Label>
-              <div className="relative">
-                <Clock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="departureTime"
-                  type="time"
-                  value={formData.departureTime}
-                  onChange={(e) => handleInputChange('departureTime', e.target.value)}
-                  className="pl-10"
-                  required
-                />
-              </div>
+            
+            <div>
+              <Label htmlFor="departure_time">Departure Time</Label>
+              <Input
+                id="departure_time"
+                type="time"
+                {...register('departure_time')}
+              />
+              {errors.departure_time && (
+                <p className="text-sm text-red-600">{errors.departure_time.message}</p>
+              )}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="totalSeats">Total Seats *</Label>
-              <div className="relative">
-                <Users className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="totalSeats"
-                  type="number"
-                  min="1"
-                  max="20"
-                  placeholder="6"
-                  value={formData.totalSeats}
-                  onChange={(e) => handleInputChange('totalSeats', e.target.value)}
-                  className="pl-10"
-                  required
-                />
-              </div>
+            <div>
+              <Label htmlFor="total_seats">Total Seats</Label>
+              <Input
+                id="total_seats"
+                type="number"
+                min="1"
+                max="50"
+                {...register('total_seats', { valueAsNumber: true })}
+              />
+              {errors.total_seats && (
+                <p className="text-sm text-red-600">{errors.total_seats.message}</p>
+              )}
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="price">Price per Seat (₦) *</Label>
-              <div className="relative">
-                <DollarSign className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="price"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="1200"
-                  value={formData.price}
-                  onChange={(e) => handleInputChange('price', e.target.value)}
-                  className="pl-10"
-                  required
-                />
-              </div>
+            
+            <div>
+              <Label htmlFor="price">Price per Seat (₦)</Label>
+              <Input
+                id="price"
+                type="number"
+                min="1"
+                {...register('price', { valueAsNumber: true })}
+              />
+              {errors.price && (
+                <p className="text-sm text-red-600">{errors.price.message}</p>
+              )}
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="vehicleType">Vehicle Type</Label>
-              <Select value={formData.vehicleType} onValueChange={(value) => handleInputChange('vehicleType', value)}>
+            
+            <div>
+              <Label htmlFor="vehicle_type">Vehicle Type</Label>
+              <Select onValueChange={(value) => setValue('vehicle_type', value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select vehicle" />
+                  <SelectValue placeholder="Select vehicle type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Toyota Sienna">Toyota Sienna</SelectItem>
-                  <SelectItem value="Toyota Hiace">Toyota Hiace</SelectItem>
-                  <SelectItem value="Toyota Corolla">Toyota Corolla</SelectItem>
-                  <SelectItem value="Honda Pilot">Honda Pilot</SelectItem>
-                  <SelectItem value="Mercedes Sprinter">Mercedes Sprinter</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
+                  <SelectItem value="Bus">Bus</SelectItem>
+                  <SelectItem value="Mini Bus">Mini Bus</SelectItem>
+                  <SelectItem value="Van">Van</SelectItem>
+                  <SelectItem value="SUV">SUV</SelectItem>
+                  <SelectItem value="Sedan">Sedan</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.vehicle_type && (
+                <p className="text-sm text-red-600">{errors.vehicle_type.message}</p>
+              )}
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div>
+            <Label htmlFor="pickup_location">Pickup Location (Optional)</Label>
+            <Input
+              id="pickup_location"
+              {...register('pickup_location')}
+              placeholder="e.g., University Main Gate"
+            />
+          </div>
+
+          <div>
             <Label htmlFor="description">Description (Optional)</Label>
             <Textarea
               id="description"
+              {...register('description')}
               placeholder="Additional details about the ride..."
-              value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
               rows={3}
             />
           </div>
 
-          <Button 
-            type="submit" 
-            className="w-full"
-            disabled={createRideMutation.isPending}
+          <Button
+            type="submit"
+            className="w-full bg-black text-white hover:bg-gray-800"
+            disabled={isSubmitting}
           >
-            {createRideMutation.isPending ? 'Creating Ride...' : 'Create Ride'}
+            {isSubmitting ? 'Creating Ride...' : 'Create Ride'}
           </Button>
         </form>
       </CardContent>

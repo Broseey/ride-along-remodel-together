@@ -4,88 +4,24 @@ import Navbar from "@/components/Navbar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import WelcomeHeader from "@/components/dashboard/WelcomeHeader";
 import QuickActions from "@/components/dashboard/QuickActions";
-import UpcomingRide from "@/components/dashboard/UpcomingRide";
-import QuickRoutes from "@/components/dashboard/QuickRoutes";
-import RecentRides from "@/components/dashboard/RecentRides";
-import AccountLinks from "@/components/dashboard/AccountLinks";
-import RealTimeStatus from "@/components/dashboard/RealTimeStatus";
 import MobileNavigation from "@/components/dashboard/MobileNavigation";
 import Footer from "@/components/dashboard/Footer";
+import UserBookings from "@/components/UserBookings";
+import AvailableRides from "@/components/AvailableRides";
+import RideRequestForm from "@/components/RideRequestForm";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRides } from "@/hooks/useRides";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { CalendarPlus, Clock, MapPin } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CalendarPlus, Clock, MapPin, Car } from "lucide-react";
+import { useRideRequests } from "@/hooks/useRideRequests";
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState("home");
+  const [activeTab, setActiveTab] = useState("bookings");
   const isMobile = useIsMobile();
   const { userProfile } = useAuth();
-  const { rides, isLoading, refetch } = useRides();
+  const { userRideRequests } = useRideRequests();
 
   const userName = userProfile?.full_name?.split(' ')[0] || 'User';
-
-  // Set up real-time subscription for user's rides
-  useEffect(() => {
-    const channel = supabase
-      .channel('user-rides-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'rides'
-        },
-        () => {
-          refetch();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [refetch]);
-
-  // Separate upcoming and past rides
-  const upcomingRides = rides?.filter(ride => 
-    ride.status === 'confirmed' || ride.status === 'pending'
-  ) || [];
-  
-  const pastRides = rides?.filter(ride => 
-    ride.status === 'completed'
-  ) || [];
-
-  const nextUpcomingRide = upcomingRides[0] || null;
-
-  // Quick routes suggestions
-  const quickRoutes = [
-    { 
-      from: "Lagos", 
-      to: "University of Ibadan", 
-      price: "₦1,200" 
-    },
-    { 
-      from: "Abuja", 
-      to: "Ahmadu Bello University", 
-      price: "₦1,500" 
-    },
-    { 
-      from: "Port Harcourt", 
-      to: "University of Port Harcourt", 
-      price: "₦800" 
-    }
-  ];
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-black"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -94,91 +30,75 @@ const Dashboard = () => {
       <div className="flex-1 px-4 py-6 md:px-6 lg:px-8 max-w-7xl mx-auto w-full">
         <WelcomeHeader name={userName} />
         
-        {/* Trip Status Overview - Simplified */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Rides</CardTitle>
-              <MapPin className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">My Bookings</CardTitle>
+              <Car className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{rides?.length || 0}</div>
-              <p className="text-xs text-muted-foreground">All time</p>
+              <div className="text-2xl font-bold">View All</div>
+              <p className="text-xs text-muted-foreground">Active and past rides</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Upcoming Rides</CardTitle>
+              <CardTitle className="text-sm font-medium">Available Rides</CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{upcomingRides.length}</div>
-              <p className="text-xs text-muted-foreground">Scheduled</p>
+              <div className="text-2xl font-bold">Browse</div>
+              <p className="text-xs text-muted-foreground">Find your next ride</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Ride Requests</CardTitle>
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{userRideRequests?.length || 0}</div>
+              <p className="text-xs text-muted-foreground">Pending requests</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Quick Request</CardTitle>
+              <CalendarPlus className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">Create</div>
+              <p className="text-xs text-muted-foreground">Request new route</p>
             </CardContent>
           </Card>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column - Main actions and upcoming ride */}
-          <div className="lg:col-span-2 space-y-6">
-            <QuickActions />
-            
-            {/* Upcoming Ride or No Rides Message */}
-            {nextUpcomingRide ? (
-              <UpcomingRide ride={nextUpcomingRide} />
-            ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">No Upcoming Rides</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center py-8">
-                  <p className="text-gray-600 mb-6">
-                    You don't have any upcoming rides scheduled.
-                  </p>
-                  <Link to="/schedule">
-                    <Button className="bg-black text-white hover:bg-neutral-800">
-                      <CalendarPlus className="mr-2 h-4 w-4" />
-                      Schedule a Ride
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            )}
-            
-            <QuickRoutes routes={quickRoutes} />
-          </div>
-          
-          {/* Right column - Account and recent activity */}
-          <div className="space-y-6">
-            <AccountLinks />
-            
-            {/* Recent Rides or No Rides Message */}
-            {pastRides.length > 0 ? (
-              <RecentRides rides={pastRides.slice(0, 3)} />
-            ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Recent Rides</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center py-6">
-                  <p className="text-gray-600 text-sm">
-                    No ride history yet. Book your first ride to get started!
-                  </p>
-                  <Link to="/">
-                    <Button className="mt-4 bg-black text-white hover:bg-neutral-800">
-                      Book a Ride
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            )}
-            
-            <RealTimeStatus />
-          </div>
-        </div>
+        {/* Main Content Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="bookings">My Bookings</TabsTrigger>
+            <TabsTrigger value="available">Available Rides</TabsTrigger>
+            <TabsTrigger value="request">Request Ride</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="bookings">
+            <UserBookings />
+          </TabsContent>
+
+          <TabsContent value="available">
+            <AvailableRides />
+          </TabsContent>
+
+          <TabsContent value="request">
+            <RideRequestForm />
+          </TabsContent>
+        </Tabs>
         
-        {/* Mobile Bottom Navigation - Make it functional */}
+        {/* Mobile Bottom Navigation */}
         {isMobile && (
           <div className="fixed bottom-0 left-0 right-0 z-50">
             <MobileNavigation 

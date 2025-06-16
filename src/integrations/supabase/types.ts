@@ -9,7 +9,239 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      admin_users: {
+        Row: {
+          admin_level: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          user_id: string
+        }
+        Insert: {
+          admin_level?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          user_id: string
+        }
+        Update: {
+          admin_level?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      bookings: {
+        Row: {
+          booking_status: string | null
+          created_at: string | null
+          id: string
+          payment_status: string | null
+          ride_id: string
+          seats_booked: number
+          total_amount: number
+          user_id: string
+        }
+        Insert: {
+          booking_status?: string | null
+          created_at?: string | null
+          id?: string
+          payment_status?: string | null
+          ride_id: string
+          seats_booked?: number
+          total_amount: number
+          user_id: string
+        }
+        Update: {
+          booking_status?: string | null
+          created_at?: string | null
+          id?: string
+          payment_status?: string | null
+          ride_id?: string
+          seats_booked?: number
+          total_amount?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_ride_id_fkey"
+            columns: ["ride_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      driver_profiles: {
+        Row: {
+          created_at: string | null
+          email: string
+          full_name: string
+          id: string
+          is_verified: boolean | null
+          license_number: string | null
+          phone_number: string | null
+          vehicle_model: string | null
+          vehicle_plate: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          full_name: string
+          id: string
+          is_verified?: boolean | null
+          license_number?: string | null
+          phone_number?: string | null
+          vehicle_model?: string | null
+          vehicle_plate?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          is_verified?: boolean | null
+          license_number?: string | null
+          phone_number?: string | null
+          vehicle_model?: string | null
+          vehicle_plate?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string
+          full_name: string
+          id: string
+          phone_number: string | null
+          university: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          full_name: string
+          id: string
+          phone_number?: string | null
+          university?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          phone_number?: string | null
+          university?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      ride_requests: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          from_location: string
+          id: string
+          max_price: number | null
+          preferred_date: string
+          preferred_time: string
+          seats_needed: number
+          status: string | null
+          to_location: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          from_location: string
+          id?: string
+          max_price?: number | null
+          preferred_date: string
+          preferred_time: string
+          seats_needed?: number
+          status?: string | null
+          to_location: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          from_location?: string
+          id?: string
+          max_price?: number | null
+          preferred_date?: string
+          preferred_time?: string
+          seats_needed?: number
+          status?: string | null
+          to_location?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      rides: {
+        Row: {
+          available_seats: number | null
+          booking_type: string | null
+          created_at: string | null
+          departure_date: string
+          departure_time: string
+          description: string | null
+          from_location: string
+          id: string
+          pickup_location: string | null
+          price: number
+          seats_requested: number
+          status: string | null
+          to_location: string
+          total_seats: number | null
+          updated_at: string | null
+          user_id: string
+          vehicle_type: string | null
+        }
+        Insert: {
+          available_seats?: number | null
+          booking_type?: string | null
+          created_at?: string | null
+          departure_date: string
+          departure_time: string
+          description?: string | null
+          from_location: string
+          id?: string
+          pickup_location?: string | null
+          price?: number
+          seats_requested?: number
+          status?: string | null
+          to_location: string
+          total_seats?: number | null
+          updated_at?: string | null
+          user_id: string
+          vehicle_type?: string | null
+        }
+        Update: {
+          available_seats?: number | null
+          booking_type?: string | null
+          created_at?: string | null
+          departure_date?: string
+          departure_time?: string
+          description?: string | null
+          from_location?: string
+          id?: string
+          pickup_location?: string | null
+          price?: number
+          seats_requested?: number
+          status?: string | null
+          to_location?: string
+          total_seats?: number | null
+          updated_at?: string | null
+          user_id?: string
+          vehicle_type?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
