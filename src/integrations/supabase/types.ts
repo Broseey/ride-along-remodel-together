@@ -11,62 +11,229 @@ export type Database = {
     Tables: {
       admin_users: {
         Row: {
-          admin_level: string | null
-          created_at: string | null
+          admin_level: string
+          created_at: string
+          created_by: string | null
           id: string
-          is_active: boolean | null
+          is_active: boolean
           user_id: string
         }
         Insert: {
-          admin_level?: string | null
-          created_at?: string | null
+          admin_level?: string
+          created_at?: string
+          created_by?: string | null
           id?: string
-          is_active?: boolean | null
+          is_active?: boolean
           user_id: string
         }
         Update: {
-          admin_level?: string | null
-          created_at?: string | null
+          admin_level?: string
+          created_at?: string
+          created_by?: string | null
           id?: string
-          is_active?: boolean | null
+          is_active?: boolean
           user_id?: string
         }
         Relationships: []
       }
-      bookings: {
+      driver_profiles: {
         Row: {
-          booking_status: string | null
+          avatar_url: string | null
+          background_check_status: string | null
           created_at: string | null
+          documents_uploaded: boolean | null
+          email: string | null
+          full_name: string | null
           id: string
-          payment_status: string | null
+          is_online: boolean | null
+          is_verified: boolean | null
+          license_number: string | null
+          phone_number: string | null
+          phone_verified: boolean | null
+          updated_at: string | null
+          vehicle_make: string | null
+          vehicle_model: string | null
+          vehicle_plate: string | null
+          vehicle_year: number | null
+          verification_approved_at: string | null
+          verification_notes: string | null
+          verification_status: string | null
+          verification_submitted_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          background_check_status?: string | null
+          created_at?: string | null
+          documents_uploaded?: boolean | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          is_online?: boolean | null
+          is_verified?: boolean | null
+          license_number?: string | null
+          phone_number?: string | null
+          phone_verified?: boolean | null
+          updated_at?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_plate?: string | null
+          vehicle_year?: number | null
+          verification_approved_at?: string | null
+          verification_notes?: string | null
+          verification_status?: string | null
+          verification_submitted_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          background_check_status?: string | null
+          created_at?: string | null
+          documents_uploaded?: boolean | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          is_online?: boolean | null
+          is_verified?: boolean | null
+          license_number?: string | null
+          phone_number?: string | null
+          phone_verified?: boolean | null
+          updated_at?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_plate?: string | null
+          vehicle_year?: number | null
+          verification_approved_at?: string | null
+          verification_notes?: string | null
+          verification_status?: string | null
+          verification_submitted_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          phone_number: string | null
+          phone_verified: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          phone_number?: string | null
+          phone_verified?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          phone_number?: string | null
+          phone_verified?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      ride_companies: {
+        Row: {
+          company_name: string
+          contact_email: string
+          contact_phone: string | null
+          created_at: string
+          description: string | null
+          id: string
+          logo_url: string | null
+          status: string | null
+          updated_at: string
+          verified_at: string | null
+          verified_by: string | null
+          website_url: string | null
+        }
+        Insert: {
+          company_name: string
+          contact_email: string
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          status?: string | null
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          company_name?: string
+          contact_email?: string
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          status?: string | null
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ride_companies_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ride_receipts: {
+        Row: {
+          amount: number
+          generated_at: string
+          id: string
+          payment_method: string | null
+          receipt_data: Json | null
+          receipt_number: string
           ride_id: string
-          seats_booked: number
+          tax_amount: number | null
           total_amount: number
           user_id: string
         }
         Insert: {
-          booking_status?: string | null
-          created_at?: string | null
+          amount: number
+          generated_at?: string
           id?: string
-          payment_status?: string | null
+          payment_method?: string | null
+          receipt_data?: Json | null
+          receipt_number: string
           ride_id: string
-          seats_booked?: number
+          tax_amount?: number | null
           total_amount: number
           user_id: string
         }
         Update: {
-          booking_status?: string | null
-          created_at?: string | null
+          amount?: number
+          generated_at?: string
           id?: string
-          payment_status?: string | null
+          payment_method?: string | null
+          receipt_data?: Json | null
+          receipt_number?: string
           ride_id?: string
-          seats_booked?: number
+          tax_amount?: number | null
           total_amount?: number
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "bookings_ride_id_fkey"
+            foreignKeyName: "ride_receipts_ride_id_fkey"
             columns: ["ride_id"]
             isOneToOne: false
             referencedRelation: "rides"
@@ -74,180 +241,128 @@ export type Database = {
           },
         ]
       }
-      driver_profiles: {
-        Row: {
-          created_at: string | null
-          email: string
-          full_name: string
-          id: string
-          is_verified: boolean | null
-          license_number: string | null
-          phone_number: string | null
-          vehicle_model: string | null
-          vehicle_plate: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          email: string
-          full_name: string
-          id: string
-          is_verified?: boolean | null
-          license_number?: string | null
-          phone_number?: string | null
-          vehicle_model?: string | null
-          vehicle_plate?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          email?: string
-          full_name?: string
-          id?: string
-          is_verified?: boolean | null
-          license_number?: string | null
-          phone_number?: string | null
-          vehicle_model?: string | null
-          vehicle_plate?: string | null
-        }
-        Relationships: []
-      }
-      profiles: {
-        Row: {
-          created_at: string | null
-          email: string
-          full_name: string
-          id: string
-          phone_number: string | null
-          university: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          email: string
-          full_name: string
-          id: string
-          phone_number?: string | null
-          university?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          email?: string
-          full_name?: string
-          id?: string
-          phone_number?: string | null
-          university?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       ride_requests: {
         Row: {
-          created_at: string | null
-          description: string | null
-          from_location: string
+          admin_notes: string | null
+          created_at: string
           id: string
-          max_price: number | null
-          preferred_date: string
-          preferred_time: string
-          seats_needed: number
-          status: string | null
-          to_location: string
-          user_id: string
+          processed_at: string | null
+          processed_by: string | null
+          request_type: string
+          requested_by: string
+          ride_id: string
+          status: string
         }
         Insert: {
-          created_at?: string | null
-          description?: string | null
-          from_location: string
+          admin_notes?: string | null
+          created_at?: string
           id?: string
-          max_price?: number | null
-          preferred_date: string
-          preferred_time: string
-          seats_needed?: number
-          status?: string | null
-          to_location: string
-          user_id: string
+          processed_at?: string | null
+          processed_by?: string | null
+          request_type: string
+          requested_by: string
+          ride_id: string
+          status?: string
         }
         Update: {
-          created_at?: string | null
-          description?: string | null
-          from_location?: string
+          admin_notes?: string | null
+          created_at?: string
           id?: string
-          max_price?: number | null
-          preferred_date?: string
-          preferred_time?: string
-          seats_needed?: number
-          status?: string | null
-          to_location?: string
-          user_id?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          request_type?: string
+          requested_by?: string
+          ride_id?: string
+          status?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ride_requests_processed_by_fkey"
+            columns: ["processed_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ride_requests_ride_id_fkey"
+            columns: ["ride_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rides: {
         Row: {
-          available_seats: number | null
-          booking_type: string | null
-          created_at: string | null
+          booking_type: string
+          company_id: string | null
+          created_at: string
           departure_date: string
           departure_time: string
-          description: string | null
+          driver_id: string | null
           from_location: string
           id: string
           pickup_location: string | null
-          price: number
+          price: number | null
           seats_requested: number
-          status: string | null
+          status: string
           to_location: string
-          total_seats: number | null
-          updated_at: string | null
+          updated_at: string
           user_id: string
-          vehicle_type: string | null
         }
         Insert: {
-          available_seats?: number | null
-          booking_type?: string | null
-          created_at?: string | null
+          booking_type: string
+          company_id?: string | null
+          created_at?: string
           departure_date: string
           departure_time: string
-          description?: string | null
+          driver_id?: string | null
           from_location: string
           id?: string
           pickup_location?: string | null
-          price?: number
+          price?: number | null
           seats_requested?: number
-          status?: string | null
+          status?: string
           to_location: string
-          total_seats?: number | null
-          updated_at?: string | null
+          updated_at?: string
           user_id: string
-          vehicle_type?: string | null
         }
         Update: {
-          available_seats?: number | null
-          booking_type?: string | null
-          created_at?: string | null
+          booking_type?: string
+          company_id?: string | null
+          created_at?: string
           departure_date?: string
           departure_time?: string
-          description?: string | null
+          driver_id?: string | null
           from_location?: string
           id?: string
           pickup_location?: string | null
-          price?: number
+          price?: number | null
           seats_requested?: number
-          status?: string | null
+          status?: string
           to_location?: string
-          total_seats?: number | null
-          updated_at?: string | null
+          updated_at?: string
           user_id?: string
-          vehicle_type?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "rides_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "ride_companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_receipt_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
