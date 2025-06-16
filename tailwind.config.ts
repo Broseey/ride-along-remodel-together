@@ -18,6 +18,9 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['Poppins', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -28,6 +31,18 @@ export default {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))'
 				},
+                campusorange: {
+                    50: '#f8f8f8',   // Lightest black
+                    100: '#e8e8e8',  // Very light black
+                    200: '#d3d3d3',  // Light black
+                    300: '#a9a9a9',  // Soft black
+                    400: '#666666',  // Medium light black
+                    500: '#333333',  // Primary black
+                    600: '#222222',  // Dark medium black
+                    700: '#1a1a1a',  // Dark black
+                    800: '#0f0f0f',  // Deeper black
+                    900: '#000000',  // Darkest black
+                },
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
 					foreground: 'hsl(var(--secondary-foreground))'
