@@ -44,7 +44,7 @@ const PaystackPayment: React.FC<PaystackPaymentProps> = ({
   const handlePayment = () => {
     if (typeof window !== 'undefined' && (window as any).PaystackPop) {
       const handler = (window as any).PaystackPop.setup({
-        key: 'pk_test_your_public_key_here', // Replace with your actual public key
+        key: 'pk_test_fd701d387879bd23739ac1bc209e7ba24ea63a8f', // Replace with your actual public key
         email,
         amount: amount * 100, // Convert to kobo
         currency: 'NGN',
