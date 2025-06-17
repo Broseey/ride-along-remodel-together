@@ -36,6 +36,53 @@ export type Database = {
         }
         Relationships: []
       }
+      bookings: {
+        Row: {
+          booking_status: string
+          created_at: string
+          id: string
+          payment_reference: string | null
+          payment_status: string
+          ride_id: string
+          seats_booked: number
+          total_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          booking_status?: string
+          created_at?: string
+          id?: string
+          payment_reference?: string | null
+          payment_status?: string
+          ride_id: string
+          seats_booked?: number
+          total_amount: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          booking_status?: string
+          created_at?: string
+          id?: string
+          payment_reference?: string | null
+          payment_status?: string
+          ride_id?: string
+          seats_booked?: number
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_ride_id_fkey"
+            columns: ["ride_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       driver_profiles: {
         Row: {
           avatar_url: string | null
@@ -294,11 +341,13 @@ export type Database = {
       }
       rides: {
         Row: {
+          available_seats: number | null
           booking_type: string
           company_id: string | null
           created_at: string
           departure_date: string
           departure_time: string
+          description: string | null
           driver_id: string | null
           from_location: string
           id: string
@@ -307,15 +356,19 @@ export type Database = {
           seats_requested: number
           status: string
           to_location: string
+          total_seats: number | null
           updated_at: string
           user_id: string
+          vehicle_type: string | null
         }
         Insert: {
+          available_seats?: number | null
           booking_type: string
           company_id?: string | null
           created_at?: string
           departure_date: string
           departure_time: string
+          description?: string | null
           driver_id?: string | null
           from_location: string
           id?: string
@@ -324,15 +377,19 @@ export type Database = {
           seats_requested?: number
           status?: string
           to_location: string
+          total_seats?: number | null
           updated_at?: string
           user_id: string
+          vehicle_type?: string | null
         }
         Update: {
+          available_seats?: number | null
           booking_type?: string
           company_id?: string | null
           created_at?: string
           departure_date?: string
           departure_time?: string
+          description?: string | null
           driver_id?: string | null
           from_location?: string
           id?: string
@@ -341,8 +398,10 @@ export type Database = {
           seats_requested?: number
           status?: string
           to_location?: string
+          total_seats?: number | null
           updated_at?: string
           user_id?: string
+          vehicle_type?: string | null
         }
         Relationships: [
           {
@@ -353,6 +412,93 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      route_pricing: {
+        Row: {
+          base_price: number
+          created_at: string
+          distance_km: number | null
+          from_location: string
+          id: string
+          to_location: string
+          updated_at: string
+        }
+        Insert: {
+          base_price?: number
+          created_at?: string
+          distance_km?: number | null
+          from_location: string
+          id?: string
+          to_location: string
+          updated_at?: string
+        }
+        Update: {
+          base_price?: number
+          created_at?: string
+          distance_km?: number | null
+          from_location?: string
+          id?: string
+          to_location?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      travel_times: {
+        Row: {
+          created_at: string
+          estimated_time: number
+          from_location: string
+          id: string
+          to_location: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          estimated_time: number
+          from_location: string
+          id?: string
+          to_location: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          estimated_time?: number
+          from_location?: string
+          id?: string
+          to_location?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      vehicles: {
+        Row: {
+          base_price_multiplier: number
+          capacity: number
+          created_at: string
+          id: string
+          name: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          base_price_multiplier?: number
+          capacity: number
+          created_at?: string
+          id?: string
+          name: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          base_price_multiplier?: number
+          capacity?: number
+          created_at?: string
+          id?: string
+          name?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {

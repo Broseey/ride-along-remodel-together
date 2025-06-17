@@ -10,21 +10,33 @@ import { MapPin, Calendar, Clock, Users, Car } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAvailableRides } from '@/hooks/useAvailableRides';
 import { useBookings } from '@/hooks/useBookings';
+import { useAuth } from '@/contexts/AuthContext';
 import PaystackPayment from './PaystackPayment';
+import { toast } from 'sonner';
 
 const AvailableRides = () => {
   const { availableRides, isLoading } = useAvailableRides();
   const { createBooking } = useBookings();
+  const { userProfile } = useAuth();
   const [selectedRide, setSelectedRide] = useState<any>(null);
   const [seatsToBook, setSeatsToBook] = useState(1);
   const [showBookingDialog, setShowBookingDialog] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
 
   if (isLoading) {
-    return <div className="text-center">Loading available rides...</div>;
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+        <span className="ml-2">Loading available rides...</span>
+      </div>
+    );
   }
 
   const handleBookRide = (ride: any) => {
+    if (!userProfile) {
+      toast.error('Please log in to book a ride');
+      return;
+    }
     setSelectedRide(ride);
     setSeatsToBook(1);
     setShowBookingDialog(true);
@@ -36,27 +48,44 @@ const AvailableRides = () => {
   };
 
   const handlePaymentSuccess = (reference: string) => {
+    console.log('Payment successful with reference:', reference);
     createBooking.mutate({
       rideId: selectedRide.id,
       seatsBooked: seatsToBook,
       totalAmount: selectedRide.price * seatsToBook,
+      paymentReference: reference,
     });
     setShowPayment(false);
     setSelectedRide(null);
+    setSeatsToBook(1);
   };
 
   const handlePaymentClose = () => {
     setShowPayment(false);
   };
 
+  const handleDirectBooking = (ride: any) => {
+    if (!userProfile) {
+      toast.error('Please log in to book a ride');
+      return;
+    }
+    
+    console.log('Creating direct booking for ride:', ride.id);
+    createBooking.mutate({
+      rideId: ride.id,
+      seatsBooked: 1,
+      totalAmount: ride.price,
+    });
+  };
+
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold">Available Rides</h2>
-      
       {availableRides?.length === 0 ? (
         <Card>
           <CardContent className="text-center py-8">
-            <p className="text-gray-600">No rides available at the moment.</p>
+            <Car className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No rides available</h3>
+            <p className="text-gray-600">Check back later for new rides or request a custom route.</p>
           </CardContent>
         </Card>
       ) : (
@@ -102,23 +131,40 @@ const AvailableRides = () => {
                         {ride.pickup_location}
                       </div>
                     )}
+
+                    {ride.description && (
+                      <div className="mt-2 text-sm text-gray-600">
+                        <span className="font-medium">Details: </span>
+                        {ride.description}
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex flex-col lg:items-end gap-3">
                     <div className="text-center lg:text-right">
                       <div className="text-2xl font-bold text-green-600">
-                        ₦{ride.price.toLocaleString()}
+                        ₦{ride.price?.toLocaleString()}
                       </div>
                       <div className="text-sm text-gray-500">per seat</div>
                     </div>
                     
-                    <Button
-                      onClick={() => handleBookRide(ride)}
-                      className="bg-black text-white hover:bg-gray-800"
-                      disabled={ride.available_seats === 0}
-                    >
-                      {ride.available_seats === 0 ? 'Fully Booked' : 'Book Ride'}
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => handleDirectBooking(ride)}
+                        variant="outline"
+                        disabled={ride.available_seats === 0 || createBooking.isPending}
+                        className="flex-1"
+                      >
+                        {createBooking.isPending ? 'Booking...' : 'Quick Book'}
+                      </Button>
+                      <Button
+                        onClick={() => handleBookRide(ride)}
+                        className="bg-black text-white hover:bg-gray-800 flex-1"
+                        disabled={ride.available_seats === 0}
+                      >
+                        {ride.available_seats === 0 ? 'Fully Booked' : 'Book with Payment'}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -187,25 +233,21 @@ const AvailableRides = () => {
             <DialogTitle>Complete Payment</DialogTitle>
           </DialogHeader>
           
-          {selectedRide && (
-            <div className="space-y-4">
-              <div className="text-center">
-                <p className="text-lg font-semibold">
-                  ₦{(selectedRide.price * seatsToBook).toLocaleString()}
-                </p>
-                <p className="text-sm text-gray-600">
-                  for {seatsToBook} seat(s)
-                </p>
-              </div>
-              
-              <PaystackPayment
-                email="user@example.com" // This should come from user profile
-                amount={selectedRide.price * seatsToBook}
-                reference={`booking_${Date.now()}`}
-                onSuccess={handlePaymentSuccess}
-                onClose={handlePaymentClose}
-              />
-            </div>
+          {selectedRide && userProfile && (
+            <PaystackPayment
+              email={userProfile.email || 'user@example.com'}
+              amount={selectedRide.price * seatsToBook}
+              reference={`booking_${Date.now()}`}
+              onSuccess={handlePaymentSuccess}
+              onClose={handlePaymentClose}
+              rideDetails={{
+                from: selectedRide.from_location,
+                to: selectedRide.to_location,
+                date: format(new Date(selectedRide.departure_date), 'PPP'),
+                time: selectedRide.departure_time,
+                passengers: seatsToBook
+              }}
+            />
           )}
         </DialogContent>
       </Dialog>
