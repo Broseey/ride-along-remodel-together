@@ -8,6 +8,7 @@ import Footer from "@/components/dashboard/Footer";
 import UserBookings from "@/components/UserBookings";
 import AvailableRides from "@/components/AvailableRides";
 import RideRequestForm from "@/components/RideRequestForm";
+import RideBookingFormNew from "@/components/RideBookingFormNew";
 import QuickRoutes from "@/components/dashboard/QuickRoutes";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -75,22 +76,23 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setActiveTab("request-ride")}>
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setActiveTab("schedule-ride")}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Request Ride</CardTitle>
+              <CardTitle className="text-sm font-medium">Schedule Ride</CardTitle>
               <CalendarPlus className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">New</div>
-              <p className="text-xs text-muted-foreground">Custom route request</p>
+              <div className="text-2xl font-bold">Book</div>
+              <p className="text-xs text-muted-foreground">Schedule your journey</p>
             </CardContent>
           </Card>
         </div>
         
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="book-ride">Book Ride</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="book-ride">Available Rides</TabsTrigger>
+            <TabsTrigger value="schedule-ride">Schedule Ride</TabsTrigger>
             <TabsTrigger value="my-bookings">My Bookings</TabsTrigger>
             <TabsTrigger value="quick-routes">Quick Routes</TabsTrigger>
             <TabsTrigger value="request-ride">Request Ride</TabsTrigger>
@@ -107,6 +109,25 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <AvailableRides />
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="schedule-ride">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CalendarPlus className="h-5 w-5" />
+                    Schedule Your Ride
+                  </CardTitle>
+                  <p className="text-sm text-gray-600">
+                    Find and book rides for your preferred route and time
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <RideBookingFormNew />
                 </CardContent>
               </Card>
             </div>

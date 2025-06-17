@@ -4,16 +4,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, Car, MapPin, DollarSign, TrendingUp, Activity, Eye } from "lucide-react";
+import { Users, Car, MapPin, DollarSign, TrendingUp, Activity, Eye, Phone } from "lucide-react";
 import { format } from "date-fns";
 import Navbar from "@/components/Navbar";
 import RideManagement from "@/components/admin/RideManagement";
 import CreateRide from "@/components/admin/CreateRide";
-import { useQuery } from "@tanstack/react-query";
+import LocationManager from "@/components/admin/LocationManager";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
+  const queryClient = useQueryClient();
 
   // Fetch admin stats
   const { data: stats } = useQuery({
@@ -50,7 +53,7 @@ const AdminDashboard = () => {
         .from('ride_requests')
         .select(`
           *,
-          profiles:user_id(full_name, email)
+          profiles!ride_requests_user_id_fkey(full_name, email, phone_number)
         `)
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
@@ -64,31 +67,43 @@ const AdminDashboard = () => {
     },
   });
 
-  const handleApproveRequest = async (requestId: string) => {
-    const { error } = await supabase
-      .from('ride_requests')
-      .update({ status: 'approved' })
-      .eq('id', requestId);
+  const handleApproveRequest = useMutation({
+    mutationFn: async (requestId: string) => {
+      const { error } = await supabase
+        .from('ride_requests')
+        .update({ status: 'approved' })
+        .eq('id', requestId);
 
-    if (!error) {
-      // Invalidate queries to refresh data
+      if (error) throw error;
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-ride-requests'] });
       toast.success('Request approved successfully');
-    }
-  };
+    },
+    onError: (error: any) => {
+      toast.error('Failed to approve request');
+      console.error('Error approving request:', error);
+    },
+  });
 
-  const handleRejectRequest = async (requestId: string) => {
-    const { error } = await supabase
-      .from('ride_requests')
-      .update({ status: 'rejected' })
-      .eq('id', requestId);
+  const handleRejectRequest = useMutation({
+    mutationFn: async (requestId: string) => {
+      const { error } = await supabase
+        .from('ride_requests')
+        .update({ status: 'rejected' })
+        .eq('id', requestId);
 
-    if (!error) {
-      // Invalidate queries to refresh data
+      if (error) throw error;
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-ride-requests'] });
       toast.success('Request rejected');
-    }
-  };
+    },
+    onError: (error: any) => {
+      toast.error('Failed to reject request');
+      console.error('Error rejecting request:', error);
+    },
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -101,10 +116,11 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="rides">Ride Management</TabsTrigger>
             <TabsTrigger value="create-ride">Create Ride</TabsTrigger>
+            <TabsTrigger value="locations">Manage Locations</TabsTrigger>
             <TabsTrigger value="requests">Ride Requests</TabsTrigger>
           </TabsList>
 
@@ -173,6 +189,19 @@ const AdminDashboard = () => {
                         <div>
                           <p className="font-medium">Create New Ride</p>
                           <p className="text-sm opacity-80">Add a new ride for users to join</p>
+                        </div>
+                      </div>
+                    </button>
+                    
+                    <button 
+                      onClick={() => setActiveTab("locations")}
+                      className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <MapPin className="h-5 w-5" />
+                        <div>
+                          <p className="font-medium">Manage Locations</p>
+                          <p className="text-sm text-gray-500">Add universities and states</p>
                         </div>
                       </div>
                     </button>
@@ -247,6 +276,10 @@ const AdminDashboard = () => {
             <CreateRide />
           </TabsContent>
 
+          <TabsContent value="locations">
+            <LocationManager />
+          </TabsContent>
+
           <TabsContent value="requests">
             <Card>
               <CardHeader>
@@ -266,6 +299,12 @@ const AdminDashboard = () => {
                           <div>
                             <h3 className="font-medium">{request.profiles?.full_name || 'Unknown User'}</h3>
                             <p className="text-sm text-gray-500">{request.profiles?.email || 'No email'}</p>
+                            {request.profiles?.phone_number && (
+                              <div className="flex items-center gap-1 text-sm text-gray-500">
+                                <Phone className="h-3 w-3" />
+                                <span>{request.profiles.phone_number}</span>
+                              </div>
+                            )}
                           </div>
                           <Badge variant="secondary">Pending</Badge>
                         </div>
@@ -305,7 +344,7 @@ const AdminDashboard = () => {
                         <div className="flex gap-2 pt-2">
                           <Button
                             size="sm"
-                            onClick={() => handleApproveRequest(request.id)}
+                            onClick={() => handleApproveRequest.mutate(request.id)}
                             className="bg-green-600 hover:bg-green-700"
                           >
                             Approve
@@ -313,7 +352,7 @@ const AdminDashboard = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleRejectRequest(request.id)}
+                            onClick={() => handleRejectRequest.mutate(request.id)}
                           >
                             Reject
                           </Button>

@@ -3,10 +3,11 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, MapPin, Users, Calendar, Clock } from "lucide-react";
+import { Eye, MapPin, Users, Calendar, Clock, Phone } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const RideManagement = () => {
   const { data: rides, isLoading } = useQuery({
@@ -16,7 +17,7 @@ const RideManagement = () => {
         .from('rides')
         .select(`
           *,
-          profiles:user_id(full_name, email)
+          profiles!rides_user_id_fkey(full_name, email, phone_number)
         `)
         .order('created_at', { ascending: false });
       
@@ -37,7 +38,7 @@ const RideManagement = () => {
         .select(`
           *,
           rides(*),
-          profiles:user_id(full_name, email)
+          profiles!bookings_user_id_fkey(full_name, email, phone_number)
         `)
         .order('created_at', { ascending: false });
       
@@ -85,15 +86,84 @@ const RideManagement = () => {
                           {ride.profiles?.full_name || 'Unknown User'}
                         </h3>
                         <p className="text-sm text-gray-500">{ride.profiles?.email}</p>
+                        {ride.profiles?.phone_number && (
+                          <div className="flex items-center gap-1 text-sm text-gray-500">
+                            <Phone className="h-3 w-3" />
+                            <span>{ride.profiles.phone_number}</span>
+                          </div>
+                        )}
                       </div>
                       <Badge variant={getStatusColor(ride.status)}>
                         {ride.status}
                       </Badge>
                     </div>
-                    <Button size="sm" variant="outline">
-                      <Eye className="h-4 w-4 mr-2" />
-                      View Details
-                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button size="sm" variant="outline">
+                          <Eye className="h-4 w-4 mr-2" />
+                          View Details
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                          <DialogTitle>Ride Details</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="font-medium">Driver</p>
+                              <p className="text-sm text-gray-600">{ride.profiles?.full_name || 'N/A'}</p>
+                              <p className="text-sm text-gray-600">{ride.profiles?.email || 'N/A'}</p>
+                              {ride.profiles?.phone_number && (
+                                <p className="text-sm text-gray-600">{ride.profiles.phone_number}</p>
+                              )}
+                            </div>
+                            <div>
+                              <p className="font-medium">Status</p>
+                              <Badge variant={getStatusColor(ride.status)}>
+                                {ride.status}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div>
+                            <p className="font-medium">Route</p>
+                            <p className="text-sm text-gray-600">
+                              {ride.from_location} to {ride.to_location}
+                            </p>
+                          </div>
+                          <div className="grid grid-cols-3 gap-4">
+                            <div>
+                              <p className="font-medium">Date & Time</p>
+                              <p className="text-sm text-gray-600">
+                                {format(new Date(ride.departure_date), 'PPP')} at {ride.departure_time}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="font-medium">Seats</p>
+                              <p className="text-sm text-gray-600">
+                                {ride.available_seats}/{ride.total_seats} available
+                              </p>
+                            </div>
+                            <div>
+                              <p className="font-medium">Price</p>
+                              <p className="text-sm text-gray-600">₦{ride.price || 'TBD'}</p>
+                            </div>
+                          </div>
+                          {ride.pickup_location && (
+                            <div>
+                              <p className="font-medium">Pickup Location</p>
+                              <p className="text-sm text-gray-600">{ride.pickup_location}</p>
+                            </div>
+                          )}
+                          {ride.description && (
+                            <div>
+                              <p className="font-medium">Description</p>
+                              <p className="text-sm text-gray-600">{ride.description}</p>
+                            </div>
+                          )}
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
@@ -116,7 +186,7 @@ const RideManagement = () => {
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4 text-gray-500" />
                       <div>
-                        <p className="font-medium">{ride.seats_requested} passenger(s)</p>
+                        <p className="font-medium">{ride.available_seats}/{ride.total_seats} seats</p>
                         <p className="text-gray-500">{ride.booking_type}</p>
                       </div>
                     </div>
@@ -145,7 +215,7 @@ const RideManagement = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent Bookings</CardTitle>
+          <CardTitle>Ride Bookings</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -163,6 +233,12 @@ const RideManagement = () => {
                           {booking.profiles?.full_name || 'Unknown User'}
                         </h3>
                         <p className="text-sm text-gray-500">{booking.profiles?.email}</p>
+                        {booking.profiles?.phone_number && (
+                          <div className="flex items-center gap-1 text-sm text-gray-500">
+                            <Phone className="h-3 w-3" />
+                            <span>{booking.profiles.phone_number}</span>
+                          </div>
+                        )}
                       </div>
                       <Badge variant="default">
                         {booking.booking_status}

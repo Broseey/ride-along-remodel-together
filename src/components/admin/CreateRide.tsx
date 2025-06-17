@@ -45,6 +45,50 @@ const CreateRide = () => {
     }
   });
 
+  // Nigerian states and universities
+  const nigerianStates = [
+    'Lagos', 'Abuja', 'Kano', 'Rivers', 'Oyo', 'Kaduna', 'Katsina', 'Ogun',
+    'Ondo', 'Imo', 'Delta', 'Edo', 'Enugu', 'Anambra', 'Abia', 'Bauchi',
+    'Benue', 'Borno', 'Cross River', 'Ebonyi', 'Ekiti', 'Gombe', 'Jigawa',
+    'Kebbi', 'Kogi', 'Kwara', 'Nasarawa', 'Niger', 'Osun', 'Plateau',
+    'Sokoto', 'Taraba', 'Yobe', 'Zamfara', 'Adamawa', 'Akwa Ibom', 'Bayelsa'
+  ];
+
+  const nigerianUniversities = [
+    'University of Lagos (UNILAG)',
+    'University of Ibadan (UI)',
+    'Obafemi Awolowo University (OAU)',
+    'University of Nigeria, Nsukka (UNN)',
+    'Ahmadu Bello University (ABU)',
+    'University of Port Harcourt (UNIPORT)',
+    'Federal University of Technology, Akure (FUTA)',
+    'Lagos State University (LASU)',
+    'Covenant University',
+    'Babcock University',
+    'University of Benin (UNIBEN)',
+    'Federal University of Technology, Owerri (FUTO)',
+    'University of Ilorin (UNILORIN)',
+    'Nnamdi Azikiwe University (UNIZIK)',
+    'Federal University, Oye-Ekiti (FUOYE)',
+    'University of Calabar (UNICAL)',
+    'Bayero University, Kano (BUK)',
+    'University of Jos (UNIJOS)',
+    'Delta State University (DELSU)',
+    'Rivers State University (RSU)',
+    'Imo State University (IMSU)',
+    'Abia State University (ABSU)',
+    'Enugu State University of Science and Technology (ESUT)',
+    'Anambra State University (ANSU)',
+    'Ekiti State University (EKSU)',
+    'Adekunle Ajasin University (AAU)',
+    'Federal University of Agriculture, Abeokuta (FUNAAB)',
+    'University of Agriculture, Makurdi (UAM)',
+    'Federal University of Petroleum Resources, Effurun (FUPRE)',
+    'Federal University, Birnin Kebbi (FUBK)'
+  ];
+
+  const allLocations = [...nigerianStates, ...nigerianUniversities];
+
   const createRide = useMutation({
     mutationFn: async (data: FormData) => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -96,17 +140,36 @@ const CreateRide = () => {
           <Car className="h-5 w-5" />
           Create New Ride
         </CardTitle>
+        <p className="text-sm text-gray-600">
+          Create rides between states and universities for students to book
+        </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="from_location">From Location</Label>
-              <Input
-                id="from_location"
-                {...register('from_location')}
-                placeholder="e.g., Lagos"
-              />
+              <Select onValueChange={(value) => setValue('from_location', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select departure location" />
+                </SelectTrigger>
+                <SelectContent>
+                  <optgroup label="States">
+                    {nigerianStates.map((state) => (
+                      <SelectItem key={state} value={state}>
+                        {state}
+                      </SelectItem>
+                    ))}
+                  </optgroup>
+                  <optgroup label="Universities">
+                    {nigerianUniversities.map((university) => (
+                      <SelectItem key={university} value={university}>
+                        {university}
+                      </SelectItem>
+                    ))}
+                  </optgroup>
+                </SelectContent>
+              </Select>
               {errors.from_location && (
                 <p className="text-sm text-red-600">{errors.from_location.message}</p>
               )}
@@ -114,11 +177,27 @@ const CreateRide = () => {
             
             <div>
               <Label htmlFor="to_location">To Location</Label>
-              <Input
-                id="to_location"
-                {...register('to_location')}
-                placeholder="e.g., University of Ibadan"
-              />
+              <Select onValueChange={(value) => setValue('to_location', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select destination" />
+                </SelectTrigger>
+                <SelectContent>
+                  <optgroup label="States">
+                    {nigerianStates.map((state) => (
+                      <SelectItem key={state} value={state}>
+                        {state}
+                      </SelectItem>
+                    ))}
+                  </optgroup>
+                  <optgroup label="Universities">
+                    {nigerianUniversities.map((university) => (
+                      <SelectItem key={university} value={university}>
+                        {university}
+                      </SelectItem>
+                    ))}
+                  </optgroup>
+                </SelectContent>
+              </Select>
               {errors.to_location && (
                 <p className="text-sm text-red-600">{errors.to_location.message}</p>
               )}
@@ -205,7 +284,7 @@ const CreateRide = () => {
             <Input
               id="pickup_location"
               {...register('pickup_location')}
-              placeholder="e.g., University Main Gate"
+              placeholder="e.g., University Main Gate, Central Bus Station"
             />
           </div>
 
