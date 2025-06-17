@@ -19,7 +19,10 @@ export const useRideRequests = () => {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching ride requests:', error);
+        throw error;
+      }
       return data || [];
     },
   });
@@ -43,18 +46,26 @@ export const useRideRequests = () => {
         .insert({
           ...requestData,
           user_id: user.id,
+          request_type: 'ride_request',
+          ride_id: '00000000-0000-0000-0000-000000000000', // placeholder
+          requested_by: user.id,
         })
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating ride request:', error);
+        throw error;
+      }
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-ride-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-ride-requests'] });
       toast.success('Ride request submitted successfully!');
     },
     onError: (error: any) => {
+      console.error('Create ride request error:', error);
       toast.error(error.message || 'Failed to submit ride request');
     },
   });

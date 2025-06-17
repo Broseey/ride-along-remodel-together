@@ -292,35 +292,59 @@ export type Database = {
         Row: {
           admin_notes: string | null
           created_at: string
+          description: string | null
+          from_location: string | null
           id: string
+          max_price: number | null
+          preferred_date: string | null
+          preferred_time: string | null
           processed_at: string | null
           processed_by: string | null
           request_type: string
           requested_by: string
           ride_id: string
+          seats_needed: number | null
           status: string
+          to_location: string | null
+          user_id: string | null
         }
         Insert: {
           admin_notes?: string | null
           created_at?: string
+          description?: string | null
+          from_location?: string | null
           id?: string
+          max_price?: number | null
+          preferred_date?: string | null
+          preferred_time?: string | null
           processed_at?: string | null
           processed_by?: string | null
           request_type: string
           requested_by: string
           ride_id: string
+          seats_needed?: number | null
           status?: string
+          to_location?: string | null
+          user_id?: string | null
         }
         Update: {
           admin_notes?: string | null
           created_at?: string
+          description?: string | null
+          from_location?: string | null
           id?: string
+          max_price?: number | null
+          preferred_date?: string | null
+          preferred_time?: string | null
           processed_at?: string | null
           processed_by?: string | null
           request_type?: string
           requested_by?: string
           ride_id?: string
+          seats_needed?: number | null
           status?: string
+          to_location?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {

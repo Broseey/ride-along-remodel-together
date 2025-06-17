@@ -50,13 +50,16 @@ const AdminDashboard = () => {
         .from('ride_requests')
         .select(`
           *,
-          profiles!ride_requests_user_id_fkey(full_name, email)
+          profiles:user_id(full_name, email)
         `)
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
         .limit(10);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching ride requests:', error);
+        throw error;
+      }
       return data || [];
     },
   });
@@ -68,8 +71,9 @@ const AdminDashboard = () => {
       .eq('id', requestId);
 
     if (!error) {
-      // You could also automatically create a ride from this request
-      // or notify the admin to create one manually
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['admin-ride-requests'] });
+      toast.success('Request approved successfully');
     }
   };
 
@@ -78,6 +82,12 @@ const AdminDashboard = () => {
       .from('ride_requests')
       .update({ status: 'rejected' })
       .eq('id', requestId);
+
+    if (!error) {
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['admin-ride-requests'] });
+      toast.success('Request rejected');
+    }
   };
 
   return (
@@ -254,8 +264,8 @@ const AdminDashboard = () => {
                       <div key={request.id} className="border rounded-lg p-4 space-y-3">
                         <div className="flex items-center justify-between">
                           <div>
-                            <h3 className="font-medium">{request.profiles?.full_name}</h3>
-                            <p className="text-sm text-gray-500">{request.profiles?.email}</p>
+                            <h3 className="font-medium">{request.profiles?.full_name || 'Unknown User'}</h3>
+                            <p className="text-sm text-gray-500">{request.profiles?.email || 'No email'}</p>
                           </div>
                           <Badge variant="secondary">Pending</Badge>
                         </div>
@@ -263,19 +273,20 @@ const AdminDashboard = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                           <div>
                             <p className="font-medium">Route</p>
-                            <p className="text-gray-600">{request.from_location} → {request.to_location}</p>
+                            <p className="text-gray-600">{request.from_location || 'N/A'} → {request.to_location || 'N/A'}</p>
                           </div>
                           
                           <div>
                             <p className="font-medium">Date & Time</p>
                             <p className="text-gray-600">
-                              {format(new Date(request.preferred_date), 'MMM dd, yyyy')} at {request.preferred_time}
+                              {request.preferred_date ? format(new Date(request.preferred_date), 'MMM dd, yyyy') : 'N/A'} 
+                              {request.preferred_time ? ` at ${request.preferred_time}` : ''}
                             </p>
                           </div>
                           
                           <div>
                             <p className="font-medium">Seats Needed</p>
-                            <p className="text-gray-600">{request.seats_needed} passenger(s)</p>
+                            <p className="text-gray-600">{request.seats_needed || 1} passenger(s)</p>
                           </div>
                           
                           <div>
