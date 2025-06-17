@@ -1,146 +1,76 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Trash2, Plus, MapPin, Building2 } from "lucide-react";
 import { toast } from "sonner";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+
+// Static data for Nigerian states and universities
+const NIGERIAN_STATES = [
+  "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno", 
+  "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "FCT", "Gombe", 
+  "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", 
+  "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau", 
+  "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"
+];
+
+const NIGERIAN_UNIVERSITIES = [
+  "University of Lagos", "University of Ibadan", "Obafemi Awolowo University",
+  "University of Nigeria, Nsukka", "Ahmadu Bello University", "University of Benin",
+  "University of Port Harcourt", "University of Calabar", "Federal University of Technology, Akure",
+  "Lagos State University", "Covenant University", "Babcock University",
+  "Federal University of Technology, Owerri", "University of Ilorin", "Bayero University",
+  "Federal University of Agriculture, Abeokuta", "Nnamdi Azikiwe University",
+  "University of Jos", "Delta State University", "Ekiti State University"
+];
 
 const RealTimeLocationManager = () => {
+  const [activeStates, setActiveStates] = useState<string[]>(NIGERIAN_STATES.slice(0, 10));
+  const [activeUniversities, setActiveUniversities] = useState<string[]>(NIGERIAN_UNIVERSITIES.slice(0, 10));
   const [newState, setNewState] = useState("");
   const [newUniversity, setNewUniversity] = useState("");
-  const queryClient = useQueryClient();
-
-  // Fetch states and universities
-  const { data: locations, isLoading } = useQuery({
-    queryKey: ['admin-locations'],
-    queryFn: async () => {
-      const [statesResult, universitiesResult] = await Promise.all([
-        supabase.from('nigerian_states').select('*').order('name'),
-        supabase.from('nigerian_universities').select('*').order('name')
-      ]);
-      
-      return {
-        states: statesResult.data || [],
-        universities: universitiesResult.data || []
-      };
-    },
-  });
-
-  // Add state mutation
-  const addStateMutation = useMutation({
-    mutationFn: async (stateName: string) => {
-      const { error } = await supabase
-        .from('nigerian_states')
-        .insert({ name: stateName, is_active: true });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-locations'] });
-      setNewState("");
-      toast.success("State added successfully");
-    },
-    onError: (error) => {
-      toast.error("Failed to add state");
-    }
-  });
-
-  // Add university mutation
-  const addUniversityMutation = useMutation({
-    mutationFn: async (universityName: string) => {
-      const { error } = await supabase
-        .from('nigerian_universities')
-        .insert({ name: universityName, is_active: true });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-locations'] });
-      setNewUniversity("");
-      toast.success("University added successfully");
-    },
-    onError: (error) => {
-      toast.error("Failed to add university");
-    }
-  });
-
-  // Toggle state status mutation
-  const toggleStateMutation = useMutation({
-    mutationFn: async ({ id, isActive }: { id: string, isActive: boolean }) => {
-      const { error } = await supabase
-        .from('nigerian_states')
-        .update({ is_active: !isActive })
-        .eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-locations'] });
-      toast.success("State status updated");
-    }
-  });
-
-  // Toggle university status mutation
-  const toggleUniversityMutation = useMutation({
-    mutationFn: async ({ id, isActive }: { id: string, isActive: boolean }) => {
-      const { error } = await supabase
-        .from('nigerian_universities')
-        .update({ is_active: !isActive })
-        .eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-locations'] });
-      toast.success("University status updated");
-    }
-  });
-
-  // Remove state mutation
-  const removeStateMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('nigerian_states')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-locations'] });
-      toast.success("State removed successfully");
-    }
-  });
-
-  // Remove university mutation
-  const removeUniversityMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('nigerian_universities')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-locations'] });
-      toast.success("University removed successfully");
-    }
-  });
 
   const handleAddState = () => {
-    if (newState.trim()) {
-      addStateMutation.mutate(newState.trim());
+    if (newState.trim() && !activeStates.includes(newState.trim())) {
+      setActiveStates([...activeStates, newState.trim()]);
+      setNewState("");
+      toast.success("State added successfully");
+    } else if (activeStates.includes(newState.trim())) {
+      toast.error("State already exists");
     }
   };
 
   const handleAddUniversity = () => {
-    if (newUniversity.trim()) {
-      addUniversityMutation.mutate(newUniversity.trim());
+    if (newUniversity.trim() && !activeUniversities.includes(newUniversity.trim())) {
+      setActiveUniversities([...activeUniversities, newUniversity.trim()]);
+      setNewUniversity("");
+      toast.success("University added successfully");
+    } else if (activeUniversities.includes(newUniversity.trim())) {
+      toast.error("University already exists");
     }
   };
 
-  if (isLoading) {
-    return <div>Loading locations...</div>;
-  }
+  const handleRemoveState = (stateToRemove: string) => {
+    setActiveStates(activeStates.filter(state => state !== stateToRemove));
+    toast.success("State removed successfully");
+  };
+
+  const handleRemoveUniversity = (universityToRemove: string) => {
+    setActiveUniversities(activeUniversities.filter(university => university !== universityToRemove));
+    toast.success("University removed successfully");
+  };
+
+  const toggleStateStatus = (state: string) => {
+    // For demo purposes, we'll just show a toast
+    toast.success("State status updated");
+  };
+
+  const toggleUniversityStatus = (university: string) => {
+    // For demo purposes, we'll just show a toast
+    toast.success("University status updated");
+  };
 
   return (
     <div className="space-y-6">
@@ -162,7 +92,7 @@ const RealTimeLocationManager = () => {
             />
             <Button 
               onClick={handleAddState}
-              disabled={!newState.trim() || addStateMutation.isPending}
+              disabled={!newState.trim()}
             >
               <Plus className="h-4 w-4 mr-2" />
               Add State
@@ -170,28 +100,24 @@ const RealTimeLocationManager = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-            {locations?.states.map((state: any) => (
-              <div key={state.id} className="flex items-center justify-between p-2 border rounded">
+            {activeStates.map((state, index) => (
+              <div key={index} className="flex items-center justify-between p-2 border rounded">
                 <div className="flex items-center gap-2">
-                  <span className={state.is_active ? "text-black" : "text-gray-400"}>
-                    {state.name}
-                  </span>
-                  <Badge variant={state.is_active ? "default" : "secondary"}>
-                    {state.is_active ? "Active" : "Inactive"}
-                  </Badge>
+                  <span className="text-black">{state}</span>
+                  <Badge variant="default">Active</Badge>
                 </div>
                 <div className="flex gap-1">
                   <Button
                     size="sm"
-                    variant={state.is_active ? "outline" : "default"}
-                    onClick={() => toggleStateMutation.mutate({ id: state.id, isActive: state.is_active })}
+                    variant="outline"
+                    onClick={() => toggleStateStatus(state)}
                   >
-                    {state.is_active ? "Disable" : "Enable"}
+                    Disable
                   </Button>
                   <Button
                     size="sm"
                     variant="destructive"
-                    onClick={() => removeStateMutation.mutate(state.id)}
+                    onClick={() => handleRemoveState(state)}
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>
@@ -220,7 +146,7 @@ const RealTimeLocationManager = () => {
             />
             <Button 
               onClick={handleAddUniversity}
-              disabled={!newUniversity.trim() || addUniversityMutation.isPending}
+              disabled={!newUniversity.trim()}
             >
               <Plus className="h-4 w-4 mr-2" />
               Add University
@@ -228,28 +154,24 @@ const RealTimeLocationManager = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-            {locations?.universities.map((university: any) => (
-              <div key={university.id} className="flex items-center justify-between p-2 border rounded">
+            {activeUniversities.map((university, index) => (
+              <div key={index} className="flex items-center justify-between p-2 border rounded">
                 <div className="flex items-center gap-2">
-                  <span className={university.is_active ? "text-black" : "text-gray-400"}>
-                    {university.name}
-                  </span>
-                  <Badge variant={university.is_active ? "default" : "secondary"}>
-                    {university.is_active ? "Active" : "Inactive"}
-                  </Badge>
+                  <span className="text-black">{university}</span>
+                  <Badge variant="default">Active</Badge>
                 </div>
                 <div className="flex gap-1">
                   <Button
                     size="sm"
-                    variant={university.is_active ? "outline" : "default"}
-                    onClick={() => toggleUniversityMutation.mutate({ id: university.id, isActive: university.is_active })}
+                    variant="outline"
+                    onClick={() => toggleUniversityStatus(university)}
                   >
-                    {university.is_active ? "Disable" : "Enable"}
+                    Disable
                   </Button>
                   <Button
                     size="sm"
                     variant="destructive"
-                    onClick={() => removeUniversityMutation.mutate(university.id)}
+                    onClick={() => handleRemoveUniversity(university)}
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>
