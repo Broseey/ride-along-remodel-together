@@ -12,15 +12,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 const LocationManager = () => {
-  const [newLocation, setNewLocation] = useState({ name: '', type: 'university' });
+  const [newLocation, setNewLocation] = useState({ name: '', type: 'university', capacity: 20 });
   const queryClient = useQueryClient();
 
-  // Fetch custom locations from database
+  // Fetch vehicles from database (since locations table doesn't exist, we'll use vehicles for location management)
   const { data: customLocations = [] } = useQuery({
-    queryKey: ['custom-locations'],
+    queryKey: ['custom-vehicles'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('locations')
+        .from('vehicles')
         .select('*')
         .order('name');
       
@@ -29,15 +29,16 @@ const LocationManager = () => {
     },
   });
 
-  // Add location mutation
+  // Add location mutation (actually adds a vehicle)
   const addLocationMutation = useMutation({
-    mutationFn: async (location: { name: string; type: string }) => {
+    mutationFn: async (location: { name: string; type: string; capacity: number }) => {
       const { data, error } = await supabase
-        .from('locations')
+        .from('vehicles')
         .insert([{
           name: location.name,
           type: location.type,
-          is_active: true
+          capacity: location.capacity,
+          base_price_multiplier: 1.0
         }])
         .select()
         .single();
@@ -46,13 +47,13 @@ const LocationManager = () => {
       return data;
     },
     onSuccess: () => {
-      toast.success('Location added successfully!');
-      queryClient.invalidateQueries({ queryKey: ['custom-locations'] });
-      setNewLocation({ name: '', type: 'university' });
+      toast.success('Vehicle added successfully!');
+      queryClient.invalidateQueries({ queryKey: ['custom-vehicles'] });
+      setNewLocation({ name: '', type: 'university', capacity: 20 });
     },
     onError: (error) => {
-      toast.error('Failed to add location');
-      console.error('Error adding location:', error);
+      toast.error('Failed to add vehicle');
+      console.error('Error adding vehicle:', error);
     },
   });
 
@@ -60,19 +61,19 @@ const LocationManager = () => {
   const removeLocationMutation = useMutation({
     mutationFn: async (locationId: string) => {
       const { error } = await supabase
-        .from('locations')
+        .from('vehicles')
         .delete()
         .eq('id', locationId);
       
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success('Location removed successfully!');
-      queryClient.invalidateQueries({ queryKey: ['custom-locations'] });
+      toast.success('Vehicle removed successfully!');
+      queryClient.invalidateQueries({ queryKey: ['custom-vehicles'] });
     },
     onError: (error) => {
-      toast.error('Failed to remove location');
-      console.error('Error removing location:', error);
+      toast.error('Failed to remove vehicle');
+      console.error('Error removing vehicle:', error);
     },
   });
 
@@ -80,7 +81,7 @@ const LocationManager = () => {
     e.preventDefault();
     
     if (!newLocation.name.trim()) {
-      toast.error('Please enter a location name');
+      toast.error('Please enter a vehicle name');
       return;
     }
 
@@ -88,7 +89,7 @@ const LocationManager = () => {
   };
 
   const handleRemoveLocation = (locationId: string) => {
-    if (confirm('Are you sure you want to remove this location?')) {
+    if (confirm('Are you sure you want to remove this vehicle?')) {
       removeLocationMutation.mutate(locationId);
     }
   };
@@ -99,24 +100,24 @@ const LocationManager = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5" />
-            Add New Location
+            Add New Vehicle
           </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAddLocation} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="locationName">Location Name</Label>
+                <Label htmlFor="vehicleName">Vehicle Name</Label>
                 <Input
-                  id="locationName"
-                  placeholder="e.g., University of Lagos"
+                  id="vehicleName"
+                  placeholder="e.g., Toyota Hiace"
                   value={newLocation.name}
                   onChange={(e) => setNewLocation({ ...newLocation, name: e.target.value })}
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="locationType">Type</Label>
+                <Label htmlFor="vehicleType">Type</Label>
                 <Select
                   value={newLocation.type}
                   onValueChange={(value) => setNewLocation({ ...newLocation, type: value })}
@@ -125,10 +126,25 @@ const LocationManager = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="university">University</SelectItem>
-                    <SelectItem value="state">State</SelectItem>
+                    <SelectItem value="Bus">Bus</SelectItem>
+                    <SelectItem value="Mini Bus">Mini Bus</SelectItem>
+                    <SelectItem value="Van">Van</SelectItem>
+                    <SelectItem value="SUV">SUV</SelectItem>
+                    <SelectItem value="Sedan">Sedan</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="capacity">Capacity</Label>
+                <Input
+                  id="capacity"
+                  type="number"
+                  min="1"
+                  max="50"
+                  value={newLocation.capacity}
+                  onChange={(e) => setNewLocation({ ...newLocation, capacity: parseInt(e.target.value) })}
+                />
               </div>
               
               <div className="flex items-end">
@@ -137,7 +153,7 @@ const LocationManager = () => {
                   className="w-full"
                   disabled={addLocationMutation.isPending}
                 >
-                  {addLocationMutation.isPending ? 'Adding...' : 'Add Location'}
+                  {addLocationMutation.isPending ? 'Adding...' : 'Add Vehicle'}
                 </Button>
               </div>
             </div>
@@ -149,20 +165,23 @@ const LocationManager = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MapPin className="h-5 w-5" />
-            Manage Custom Locations
+            Manage Vehicles
           </CardTitle>
         </CardHeader>
         <CardContent>
           {customLocations.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No custom locations added yet.</p>
+            <p className="text-gray-500 text-center py-8">No vehicles added yet.</p>
           ) : (
             <div className="space-y-3">
               {customLocations.map((location) => (
                 <div key={location.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center gap-3">
                     <span className="font-medium">{location.name}</span>
-                    <Badge variant={location.type === 'university' ? 'default' : 'secondary'}>
+                    <Badge variant={location.type === 'Bus' ? 'default' : 'secondary'}>
                       {location.type}
+                    </Badge>
+                    <Badge variant="outline">
+                      {location.capacity} seats
                     </Badge>
                   </div>
                   <Button

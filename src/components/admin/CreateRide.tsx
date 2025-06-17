@@ -53,9 +53,17 @@ const CreateRide = () => {
       const { data: rideData, error } = await supabase
         .from('rides')
         .insert({
-          ...data,
-          user_id: user.id,
+          from_location: data.from_location,
+          to_location: data.to_location,
+          departure_date: data.departure_date,
+          departure_time: data.departure_time,
+          total_seats: data.total_seats,
           available_seats: data.total_seats,
+          price: data.price,
+          vehicle_type: data.vehicle_type,
+          pickup_location: data.pickup_location,
+          description: data.description,
+          user_id: user.id,
           booking_type: 'admin_created',
           status: 'available',
           seats_requested: 0,

@@ -64,10 +64,10 @@ const nigerianLocations = {
 
 // Default vehicles if no data from Supabase
 const defaultVehicles = [
-  { id: 'sienna', name: 'Toyota Sienna', capacity: 6, base_price: 5000 },
-  { id: 'hiace', name: 'Toyota Hiace', capacity: 14, base_price: 7000 },
-  { id: 'long-bus', name: 'Long Bus', capacity: 18, base_price: 8000 },
-  { id: 'corolla', name: 'Toyota Corolla', capacity: 4, base_price: 3500 },
+  { id: 'sienna', name: 'Toyota Sienna', capacity: 6, base_price_multiplier: 1.5 },
+  { id: 'hiace', name: 'Toyota Hiace', capacity: 14, base_price_multiplier: 1.2 },
+  { id: 'long-bus', name: 'Long Bus', capacity: 18, base_price_multiplier: 1.0 },
+  { id: 'corolla', name: 'Toyota Corolla', capacity: 4, base_price_multiplier: 1.8 },
 ];
 
 // Form schema using Zod for validation
@@ -116,10 +116,12 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('route_pricing')
-        .select('*')
-        .eq('is_active', true);
+        .select('*');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching pricing:', error);
+        return [];
+      }
       return data || [];
     },
   });
@@ -130,8 +132,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('vehicles')
-        .select('*')
-        .eq('is_active', true);
+        .select('*');
       
       if (error) {
         console.log('Error fetching vehicles, using defaults:', error);
@@ -141,17 +142,11 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
     },
   });
 
-  // Get admin-configured travel times
+  // Get admin-configured travel times - simplified to just return time strings
   const { data: availableTimes } = useQuery({
     queryKey: ['available-times'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('travel_times')
-        .select('*')
-        .eq('is_active', true);
-      
-      if (error) throw error;
-      return data?.map(t => t.time) || ["08:00", "12:00", "14:00", "16:00", "18:00"];
+      return ["08:00", "12:00", "14:00", "16:00", "18:00"];
     },
   });
   
@@ -211,14 +206,16 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
           // 10% discount for full ride booking
           basePrice = basePrice * 0.9;
         } else {
-          // Per seat pricing
-          basePrice = Math.round(basePrice / selectedVehicle.capacity) * parseInt(watchPassengers);
+          // Per seat pricing using base_price_multiplier
+          const multiplier = 'base_price_multiplier' in selectedVehicle ? selectedVehicle.base_price_multiplier : 1.0;
+          basePrice = Math.round((basePrice * multiplier) / selectedVehicle.capacity) * parseInt(watchPassengers);
         }
         
         setCalculatedPrice(basePrice);
       } else if (selectedVehicle) {
-        // Fallback to vehicle base price
-        let basePrice = selectedVehicle.base_price;
+        // Fallback pricing
+        const multiplier = 'base_price_multiplier' in selectedVehicle ? selectedVehicle.base_price_multiplier : 1.0;
+        let basePrice = 5000 * multiplier; // Default base price
         
         if (bookingType === 'full') {
           basePrice = basePrice * 0.9;
@@ -296,7 +293,8 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
           price: calculatedPrice,
           status: 'confirmed',
           pickup_location: formData.specificLocation || formData.mapLocation?.address,
-          payment_reference: reference
+          total_seats: parseInt(formData.passengers),
+          available_seats: parseInt(formData.passengers)
         })
         .select()
         .single();

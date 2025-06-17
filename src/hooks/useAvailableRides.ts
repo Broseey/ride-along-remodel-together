@@ -17,7 +17,10 @@ export const useAvailableRides = () => {
         .gte('departure_date', new Date().toISOString().split('T')[0])
         .order('departure_date', { ascending: true });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching available rides:', error);
+        return [];
+      }
       return data || [];
     },
   });
