@@ -467,6 +467,63 @@ export type Database = {
         }
         Relationships: []
       }
+      route_vehicle_pricing: {
+        Row: {
+          base_price: number
+          created_at: string | null
+          from_location: string
+          id: string
+          is_active: boolean | null
+          to_location: string
+          updated_at: string | null
+          vehicle_type: string
+        }
+        Insert: {
+          base_price?: number
+          created_at?: string | null
+          from_location: string
+          id?: string
+          is_active?: boolean | null
+          to_location: string
+          updated_at?: string | null
+          vehicle_type: string
+        }
+        Update: {
+          base_price?: number
+          created_at?: string | null
+          from_location?: string
+          id?: string
+          is_active?: boolean | null
+          to_location?: string
+          updated_at?: string | null
+          vehicle_type?: string
+        }
+        Relationships: []
+      }
+      states: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       travel_times: {
         Row: {
           created_at: string
@@ -491,6 +548,33 @@ export type Database = {
           id?: string
           to_location?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      universities: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          state: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          state: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          state?: string
+          updated_at?: string | null
         }
         Relationships: []
       }

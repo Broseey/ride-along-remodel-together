@@ -9,7 +9,8 @@ import { format } from "date-fns";
 import Navbar from "@/components/Navbar";
 import RideManagement from "@/components/admin/RideManagement";
 import CreateRide from "@/components/admin/CreateRide";
-import LocationManager from "@/components/admin/LocationManager";
+import UniversityStateManager from "@/components/admin/UniversityStateManager";
+import ComprehensivePricingManager from "@/components/admin/ComprehensivePricingManager";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -141,11 +142,12 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="rides">Ride Management</TabsTrigger>
             <TabsTrigger value="create-ride">Create Ride</TabsTrigger>
             <TabsTrigger value="locations">Manage Locations</TabsTrigger>
+            <TabsTrigger value="pricing">Pricing Control</TabsTrigger>
             <TabsTrigger value="requests">Ride Requests</TabsTrigger>
           </TabsList>
 
@@ -302,7 +304,11 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="locations">
-            <LocationManager />
+            <UniversityStateManager />
+          </TabsContent>
+
+          <TabsContent value="pricing">
+            <ComprehensivePricingManager />
           </TabsContent>
 
           <TabsContent value="requests">

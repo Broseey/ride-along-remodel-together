@@ -10,10 +10,11 @@ import AvailableRides from "@/components/AvailableRides";
 import RideRequestForm from "@/components/RideRequestForm";
 import RideBookingFormNew from "@/components/RideBookingFormNew";
 import QuickRoutes from "@/components/dashboard/QuickRoutes";
+import UserProfileManager from "@/components/UserProfileManager";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarPlus, Clock, MapPin, Car, Route, Users } from "lucide-react";
+import { CalendarPlus, Clock, MapPin, Car, Route, Users, User } from "lucide-react";
 import { useBookings } from "@/hooks/useBookings";
 import { useAvailableRides } from "@/hooks/useAvailableRides";
 
@@ -43,8 +44,23 @@ const Dashboard = () => {
       <div className="flex-1 px-4 py-6 md:px-6 lg:px-8 max-w-7xl mx-auto w-full">
         <WelcomeHeader name={userName} />
         
+        {/* Show phone warning if not provided */}
+        {!userProfile?.phone_number && (
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-sm text-yellow-800">
+              ⚠️ Please update your profile with a phone number to make ride bookings. 
+              <button 
+                onClick={() => setActiveTab("profile")}
+                className="ml-2 underline font-medium hover:text-yellow-900"
+              >
+                Update now
+              </button>
+            </p>
+          </div>
+        )}
+        
         {/* Quick Stats Dashboard */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setActiveTab("book-ride")}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Available Rides</CardTitle>
@@ -88,16 +104,28 @@ const Dashboard = () => {
               <p className="text-xs text-muted-foreground">Schedule your journey</p>
             </CardContent>
           </Card>
+
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setActiveTab("profile")}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">My Profile</CardTitle>
+              <User className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">Edit</div>
+              <p className="text-xs text-muted-foreground">Update details</p>
+            </CardContent>
+          </Card>
         </div>
         
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="schedule-ride">Schedule Ride</TabsTrigger>
             <TabsTrigger value="book-ride">Available Rides</TabsTrigger>
             <TabsTrigger value="my-bookings">My Bookings</TabsTrigger>
             <TabsTrigger value="quick-routes">Quick Routes</TabsTrigger>
             <TabsTrigger value="request-ride">Request Ride</TabsTrigger>
+            <TabsTrigger value="profile">My Profile</TabsTrigger>
           </TabsList>
 
           <TabsContent value="schedule-ride">
@@ -157,6 +185,10 @@ const Dashboard = () => {
 
           <TabsContent value="request-ride">
             <RideRequestForm />
+          </TabsContent>
+
+          <TabsContent value="profile">
+            <UserProfileManager />
           </TabsContent>
         </Tabs>
         

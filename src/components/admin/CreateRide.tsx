@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,7 @@ import { Car } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -45,57 +44,32 @@ const CreateRide = () => {
     }
   });
 
-  // Updated Nigerian states and universities with major universities
-  const nigerianStates = [
-    'Lagos', 'Abuja', 'Kano', 'Rivers', 'Oyo', 'Kaduna', 'Katsina', 'Ogun',
-    'Ondo', 'Imo', 'Delta', 'Edo', 'Enugu', 'Anambra', 'Abia', 'Bauchi',
-    'Benue', 'Borno', 'Cross River', 'Ebonyi', 'Ekiti', 'Gombe', 'Jigawa',
-    'Kebbi', 'Kogi', 'Kwara', 'Nasarawa', 'Niger', 'Osun', 'Plateau',
-    'Sokoto', 'Taraba', 'Yobe', 'Zamfara', 'Adamawa', 'Akwa Ibom', 'Bayelsa'
-  ];
+  // Fetch active states and universities from database
+  const { data: states } = useQuery({
+    queryKey: ['active-states'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('states')
+        .select('name')
+        .eq('is_active', true)
+        .order('name');
+      if (error) throw error;
+      return data.map(s => s.name);
+    },
+  });
 
-  const nigerianUniversities = [
-    'University of Lagos (UNILAG)',
-    'University of Ibadan (UI)', 
-    'Obafemi Awolowo University (OAU)',
-    'University of Nigeria, Nsukka (UNN)',
-    'Ahmadu Bello University (ABU)',
-    'University of Port Harcourt (UNIPORT)',
-    'Federal University of Technology, Akure (FUTA)',
-    'Lagos State University (LASU)',
-    'Covenant University',
-    'Babcock University',
-    'University of Benin (UNIBEN)',
-    'Federal University of Technology, Owerri (FUTO)',
-    'University of Ilorin (UNILORIN)',
-    'Nnamdi Azikiwe University (UNIZIK)',
-    'Federal University, Oye-Ekiti (FUOYE)',
-    'University of Calabar (UNICAL)',
-    'Bayero University, Kano (BUK)',
-    'University of Jos (UNIJOS)',
-    'Delta State University (DELSU)',
-    'Rivers State University (RSU)',
-    'Imo State University (IMSU)',
-    'Abia State University (ABSU)',
-    'Enugu State University of Science and Technology (ESUT)',
-    'Anambra State University (ANSU)',
-    'Ekiti State University (EKSU)',
-    'Adekunle Ajasin University (AAU)',
-    'Federal University of Agriculture, Abeokuta (FUNAAB)',
-    'University of Agriculture, Makurdi (UAM)',
-    'Federal University of Petroleum Resources, Effurun (FUPRE)',
-    'Federal University, Birnin Kebbi (FUBK)',
-    'Bowen University',
-    'Redeemer\'s University',
-    'Lead City University',
-    'Bells University of Technology',
-    'Crawford University',
-    'Landmark University',
-    'Mountain Top University',
-    'Pan-Atlantic University',
-    'American University of Nigeria (AUN)',
-    'Igbinedion University'
-  ];
+  const { data: universities } = useQuery({
+    queryKey: ['active-universities'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('universities')
+        .select('name')
+        .eq('is_active', true)
+        .order('name');
+      if (error) throw error;
+      return data.map(u => u.name);
+    },
+  });
 
   const createRide = useMutation({
     mutationFn: async (data: FormData) => {
@@ -142,6 +116,12 @@ const CreateRide = () => {
     createRide.mutate(data);
   };
 
+  // Combine states and universities for location options
+  const allLocations = [
+    ...(states || []),
+    ...(universities || [])
+  ].sort();
+
   return (
     <Card>
       <CardHeader>
@@ -164,13 +144,13 @@ const CreateRide = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <div className="font-semibold px-2 py-1 text-sm">States</div>
-                  {nigerianStates.map((state) => (
+                  {states?.map((state) => (
                     <SelectItem key={state} value={state}>
                       {state}
                     </SelectItem>
                   ))}
                   <div className="font-semibold px-2 py-1 text-sm border-t mt-2 pt-2">Universities</div>
-                  {nigerianUniversities.map((university) => (
+                  {universities?.map((university) => (
                     <SelectItem key={university} value={university}>
                       {university}
                     </SelectItem>
@@ -190,13 +170,13 @@ const CreateRide = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <div className="font-semibold px-2 py-1 text-sm">States</div>
-                  {nigerianStates.map((state) => (
+                  {states?.map((state) => (
                     <SelectItem key={state} value={state}>
                       {state}
                     </SelectItem>
                   ))}
                   <div className="font-semibold px-2 py-1 text-sm border-t mt-2 pt-2">Universities</div>
-                  {nigerianUniversities.map((university) => (
+                  {universities?.map((university) => (
                     <SelectItem key={university} value={university}>
                       {university}
                     </SelectItem>
