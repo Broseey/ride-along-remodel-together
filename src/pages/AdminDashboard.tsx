@@ -14,11 +14,30 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+interface RideRequestWithProfile {
+  id: string;
+  user_id: string;
+  from_location: string;
+  to_location: string;
+  preferred_date: string;
+  preferred_time: string;
+  seats_needed: number;
+  max_price: number;
+  description: string;
+  status: string;
+  created_at: string;
+  profile?: {
+    full_name: string | null;
+    email: string | null;
+    phone_number: string | null;
+  };
+}
+
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const queryClient = useQueryClient();
 
-  // Fetch admin stats
+  // Fetch admin stats with proper counting
   const { data: stats } = useQuery({
     queryKey: ['admin-stats'],
     queryFn: async () => {
@@ -45,7 +64,7 @@ const AdminDashboard = () => {
     },
   });
 
-  // Fetch recent ride requests for admin review
+  // Fetch recent ride requests for admin review with proper joins
   const { data: rideRequests } = useQuery({
     queryKey: ['admin-ride-requests'],
     queryFn: async () => {
@@ -53,7 +72,7 @@ const AdminDashboard = () => {
         .from('ride_requests')
         .select(`
           *,
-          profiles!ride_requests_user_id_fkey(full_name, email, phone_number)
+          profiles!inner(full_name, email, phone_number)
         `)
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
@@ -61,9 +80,13 @@ const AdminDashboard = () => {
       
       if (error) {
         console.error('Error fetching ride requests:', error);
-        throw error;
+        return [];
       }
-      return data || [];
+      
+      return (data || []).map(request => ({
+        ...request,
+        profile: Array.isArray(request.profiles) ? request.profiles[0] : request.profiles
+      })) as RideRequestWithProfile[];
     },
   });
 
@@ -78,6 +101,7 @@ const AdminDashboard = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-ride-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
       toast.success('Request approved successfully');
     },
     onError: (error: any) => {
@@ -97,6 +121,7 @@ const AdminDashboard = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-ride-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
       toast.success('Request rejected');
     },
     onError: (error: any) => {
@@ -283,7 +308,7 @@ const AdminDashboard = () => {
           <TabsContent value="requests">
             <Card>
               <CardHeader>
-                <CardTitle>Ride Requests</CardTitle>
+                <CardTitle>Pending Ride Requests ({rideRequests?.length || 0})</CardTitle>
                 <p className="text-sm text-gray-600">Review and approve user ride requests</p>
               </CardHeader>
               <CardContent>
@@ -297,12 +322,12 @@ const AdminDashboard = () => {
                       <div key={request.id} className="border rounded-lg p-4 space-y-3">
                         <div className="flex items-center justify-between">
                           <div>
-                            <h3 className="font-medium">{request.profiles?.full_name || 'Unknown User'}</h3>
-                            <p className="text-sm text-gray-500">{request.profiles?.email || 'No email'}</p>
-                            {request.profiles?.phone_number && (
+                            <h3 className="font-medium">{request.profile?.full_name || 'Unknown User'}</h3>
+                            <p className="text-sm text-gray-500">{request.profile?.email || 'No email'}</p>
+                            {request.profile?.phone_number && (
                               <div className="flex items-center gap-1 text-sm text-gray-500">
                                 <Phone className="h-3 w-3" />
-                                <span>{request.profiles.phone_number}</span>
+                                <span>{request.profile.phone_number}</span>
                               </div>
                             )}
                           </div>

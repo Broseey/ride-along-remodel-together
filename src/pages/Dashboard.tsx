@@ -18,7 +18,7 @@ import { useBookings } from "@/hooks/useBookings";
 import { useAvailableRides } from "@/hooks/useAvailableRides";
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState("book-ride");
+  const [activeTab, setActiveTab] = useState("schedule-ride");
   const isMobile = useIsMobile();
   const { userProfile } = useAuth();
   const { userBookings } = useBookings();
@@ -28,10 +28,12 @@ const Dashboard = () => {
 
   // Popular routes for quick booking
   const popularRoutes = [
-    { from: "Lagos", to: "University of Ibadan", price: "₦2,500" },
-    { from: "Abuja", to: "University of Lagos", price: "₦5,000" },
-    { from: "Port Harcourt", to: "University of Nigeria Nsukka", price: "₦4,000" },
-    { from: "Kano", to: "Ahmadu Bello University", price: "₦1,500" },
+    { from: "Lagos", to: "University of Ibadan (UI)", price: "₦2,500" },
+    { from: "Abuja", to: "University of Lagos (UNILAG)", price: "₦5,000" },
+    { from: "Port Harcourt", to: "University of Nigeria, Nsukka (UNN)", price: "₦4,000" },
+    { from: "Kano", to: "Ahmadu Bello University (ABU)", price: "₦1,500" },
+    { from: "Ibadan", to: "Obafemi Awolowo University (OAU)", price: "₦1,800" },
+    { from: "Lagos", to: "Covenant University", price: "₦2,000" },
   ];
 
   return (
@@ -91,12 +93,31 @@ const Dashboard = () => {
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="book-ride">Available Rides</TabsTrigger>
             <TabsTrigger value="schedule-ride">Schedule Ride</TabsTrigger>
+            <TabsTrigger value="book-ride">Available Rides</TabsTrigger>
             <TabsTrigger value="my-bookings">My Bookings</TabsTrigger>
             <TabsTrigger value="quick-routes">Quick Routes</TabsTrigger>
             <TabsTrigger value="request-ride">Request Ride</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="schedule-ride">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CalendarPlus className="h-5 w-5" />
+                    Schedule Your Ride - Main Booking
+                  </CardTitle>
+                  <p className="text-sm text-gray-600">
+                    Find and book rides for your preferred route and time
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <RideBookingFormNew />
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
           <TabsContent value="book-ride">
             <div className="space-y-6">
@@ -109,25 +130,6 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <AvailableRides />
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="schedule-ride">
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CalendarPlus className="h-5 w-5" />
-                    Schedule Your Ride
-                  </CardTitle>
-                  <p className="text-sm text-gray-600">
-                    Find and book rides for your preferred route and time
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <RideBookingFormNew />
                 </CardContent>
               </Card>
             </div>

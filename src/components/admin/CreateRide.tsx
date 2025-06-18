@@ -45,7 +45,7 @@ const CreateRide = () => {
     }
   });
 
-  // Nigerian states and universities
+  // Updated Nigerian states and universities with major universities
   const nigerianStates = [
     'Lagos', 'Abuja', 'Kano', 'Rivers', 'Oyo', 'Kaduna', 'Katsina', 'Ogun',
     'Ondo', 'Imo', 'Delta', 'Edo', 'Enugu', 'Anambra', 'Abia', 'Bauchi',
@@ -56,7 +56,7 @@ const CreateRide = () => {
 
   const nigerianUniversities = [
     'University of Lagos (UNILAG)',
-    'University of Ibadan (UI)',
+    'University of Ibadan (UI)', 
     'Obafemi Awolowo University (OAU)',
     'University of Nigeria, Nsukka (UNN)',
     'Ahmadu Bello University (ABU)',
@@ -84,10 +84,18 @@ const CreateRide = () => {
     'Federal University of Agriculture, Abeokuta (FUNAAB)',
     'University of Agriculture, Makurdi (UAM)',
     'Federal University of Petroleum Resources, Effurun (FUPRE)',
-    'Federal University, Birnin Kebbi (FUBK)'
+    'Federal University, Birnin Kebbi (FUBK)',
+    'Bowen University',
+    'Redeemer\'s University',
+    'Lead City University',
+    'Bells University of Technology',
+    'Crawford University',
+    'Landmark University',
+    'Mountain Top University',
+    'Pan-Atlantic University',
+    'American University of Nigeria (AUN)',
+    'Igbinedion University'
   ];
-
-  const allLocations = [...nigerianStates, ...nigerianUniversities];
 
   const createRide = useMutation({
     mutationFn: async (data: FormData) => {
@@ -121,7 +129,8 @@ const CreateRide = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-rides'] });
       queryClient.invalidateQueries({ queryKey: ['available-rides'] });
-      toast.success('Ride created successfully!');
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+      toast.success('Ride created successfully! Users can now book seats.');
       reset();
     },
     onError: (error: any) => {
@@ -141,7 +150,7 @@ const CreateRide = () => {
           Create New Ride
         </CardTitle>
         <p className="text-sm text-gray-600">
-          Create rides between states and universities for students to book
+          Create rides that will appear in "Available Rides" for users to book seats
         </p>
       </CardHeader>
       <CardContent>
@@ -154,20 +163,18 @@ const CreateRide = () => {
                   <SelectValue placeholder="Select departure location" />
                 </SelectTrigger>
                 <SelectContent>
-                  <optgroup label="States">
-                    {nigerianStates.map((state) => (
-                      <SelectItem key={state} value={state}>
-                        {state}
-                      </SelectItem>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Universities">
-                    {nigerianUniversities.map((university) => (
-                      <SelectItem key={university} value={university}>
-                        {university}
-                      </SelectItem>
-                    ))}
-                  </optgroup>
+                  <div className="font-semibold px-2 py-1 text-sm">States</div>
+                  {nigerianStates.map((state) => (
+                    <SelectItem key={state} value={state}>
+                      {state}
+                    </SelectItem>
+                  ))}
+                  <div className="font-semibold px-2 py-1 text-sm border-t mt-2 pt-2">Universities</div>
+                  {nigerianUniversities.map((university) => (
+                    <SelectItem key={university} value={university}>
+                      {university}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               {errors.from_location && (
@@ -182,20 +189,18 @@ const CreateRide = () => {
                   <SelectValue placeholder="Select destination" />
                 </SelectTrigger>
                 <SelectContent>
-                  <optgroup label="States">
-                    {nigerianStates.map((state) => (
-                      <SelectItem key={state} value={state}>
-                        {state}
-                      </SelectItem>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Universities">
-                    {nigerianUniversities.map((university) => (
-                      <SelectItem key={university} value={university}>
-                        {university}
-                      </SelectItem>
-                    ))}
-                  </optgroup>
+                  <div className="font-semibold px-2 py-1 text-sm">States</div>
+                  {nigerianStates.map((state) => (
+                    <SelectItem key={state} value={state}>
+                      {state}
+                    </SelectItem>
+                  ))}
+                  <div className="font-semibold px-2 py-1 text-sm border-t mt-2 pt-2">Universities</div>
+                  {nigerianUniversities.map((university) => (
+                    <SelectItem key={university} value={university}>
+                      {university}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               {errors.to_location && (
@@ -271,6 +276,8 @@ const CreateRide = () => {
                   <SelectItem value="Van">Van</SelectItem>
                   <SelectItem value="SUV">SUV</SelectItem>
                   <SelectItem value="Sedan">Sedan</SelectItem>
+                  <SelectItem value="Coaster">Coaster</SelectItem>
+                  <SelectItem value="Sprinter">Sprinter</SelectItem>
                 </SelectContent>
               </Select>
               {errors.vehicle_type && (
@@ -284,7 +291,7 @@ const CreateRide = () => {
             <Input
               id="pickup_location"
               {...register('pickup_location')}
-              placeholder="e.g., University Main Gate, Central Bus Station"
+              placeholder="e.g., University Main Gate, Central Bus Station, Lagos Island"
             />
           </div>
 
@@ -293,7 +300,7 @@ const CreateRide = () => {
             <Textarea
               id="description"
               {...register('description')}
-              placeholder="Additional details about the ride..."
+              placeholder="Additional details about the ride (e.g., stops, amenities, contact info)..."
               rows={3}
             />
           </div>
@@ -303,7 +310,7 @@ const CreateRide = () => {
             className="w-full bg-black text-white hover:bg-gray-800"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Creating Ride...' : 'Create Ride'}
+            {isSubmitting ? 'Creating Ride...' : 'Create Ride for Users to Book'}
           </Button>
         </form>
       </CardContent>

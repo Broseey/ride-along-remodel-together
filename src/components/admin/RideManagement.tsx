@@ -9,6 +9,49 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
+interface ProfileData {
+  full_name: string | null;
+  email: string | null;
+  phone_number: string | null;
+}
+
+interface RideWithProfile {
+  id: string;
+  user_id: string;
+  from_location: string;
+  to_location: string;
+  departure_date: string;
+  departure_time: string;
+  total_seats: number;
+  available_seats: number;
+  price: number;
+  status: string;
+  booking_type: string;
+  pickup_location?: string;
+  description?: string;
+  vehicle_type?: string;
+  created_at: string;
+  profile?: ProfileData;
+}
+
+interface BookingWithProfile {
+  id: string;
+  user_id: string;
+  ride_id: string;
+  seats_booked: number;
+  total_amount: number;
+  booking_status: string;
+  payment_status: string;
+  created_at: string;
+  profile?: ProfileData;
+  ride?: {
+    from_location: string;
+    to_location: string;
+    departure_date: string;
+    departure_time: string;
+  };
+}
+
 const RideManagement = () => {
   const { data: rides, isLoading } = useQuery({
     queryKey: ['admin-rides'],
@@ -17,15 +60,19 @@ const RideManagement = () => {
         .from('rides')
         .select(`
           *,
-          profiles!rides_user_id_fkey(full_name, email, phone_number)
+          profiles!inner(full_name, email, phone_number)
         `)
         .order('created_at', { ascending: false });
       
       if (error) {
         console.error('Error fetching rides:', error);
-        throw error;
+        return [];
       }
-      return data;
+      
+      return (data || []).map(ride => ({
+        ...ride,
+        profile: Array.isArray(ride.profiles) ? ride.profiles[0] : ride.profiles
+      })) as RideWithProfile[];
     },
   });
 
@@ -37,16 +84,21 @@ const RideManagement = () => {
         .from('bookings')
         .select(`
           *,
-          rides(*),
-          profiles!bookings_user_id_fkey(full_name, email, phone_number)
+          profiles!inner(full_name, email, phone_number),
+          rides!inner(from_location, to_location, departure_date, departure_time)
         `)
         .order('created_at', { ascending: false });
       
       if (error) {
         console.error('Error fetching bookings:', error);
-        throw error;
+        return [];
       }
-      return data;
+      
+      return (data || []).map(booking => ({
+        ...booking,
+        profile: Array.isArray(booking.profiles) ? booking.profiles[0] : booking.profiles,
+        ride: Array.isArray(booking.rides) ? booking.rides[0] : booking.rides
+      })) as BookingWithProfile[];
     },
   });
 
@@ -54,6 +106,7 @@ const RideManagement = () => {
     switch (status) {
       case 'pending': return 'secondary';
       case 'confirmed': return 'default';
+      case 'available': return 'default';
       case 'completed': return 'outline';
       case 'cancelled': return 'destructive';
       default: return 'secondary';
@@ -68,7 +121,7 @@ const RideManagement = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>All Rides</CardTitle>
+          <CardTitle>All Rides ({rides?.length || 0})</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -83,13 +136,13 @@ const RideManagement = () => {
                     <div className="flex items-center gap-3">
                       <div>
                         <h3 className="font-medium">
-                          {ride.profiles?.full_name || 'Unknown User'}
+                          {ride.profile?.full_name || 'Unknown User'}
                         </h3>
-                        <p className="text-sm text-gray-500">{ride.profiles?.email}</p>
-                        {ride.profiles?.phone_number && (
+                        <p className="text-sm text-gray-500">{ride.profile?.email || 'No email'}</p>
+                        {ride.profile?.phone_number && (
                           <div className="flex items-center gap-1 text-sm text-gray-500">
                             <Phone className="h-3 w-3" />
-                            <span>{ride.profiles.phone_number}</span>
+                            <span>{ride.profile.phone_number}</span>
                           </div>
                         )}
                       </div>
@@ -111,11 +164,11 @@ const RideManagement = () => {
                         <div className="space-y-4">
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <p className="font-medium">Driver</p>
-                              <p className="text-sm text-gray-600">{ride.profiles?.full_name || 'N/A'}</p>
-                              <p className="text-sm text-gray-600">{ride.profiles?.email || 'N/A'}</p>
-                              {ride.profiles?.phone_number && (
-                                <p className="text-sm text-gray-600">{ride.profiles.phone_number}</p>
+                              <p className="font-medium">Driver/Creator</p>
+                              <p className="text-sm text-gray-600">{ride.profile?.full_name || 'N/A'}</p>
+                              <p className="text-sm text-gray-600">{ride.profile?.email || 'N/A'}</p>
+                              {ride.profile?.phone_number && (
+                                <p className="text-sm text-gray-600">{ride.profile.phone_number}</p>
                               )}
                             </div>
                             <div>
@@ -153,6 +206,12 @@ const RideManagement = () => {
                             <div>
                               <p className="font-medium">Pickup Location</p>
                               <p className="text-sm text-gray-600">{ride.pickup_location}</p>
+                            </div>
+                          )}
+                          {ride.vehicle_type && (
+                            <div>
+                              <p className="font-medium">Vehicle Type</p>
+                              <p className="text-sm text-gray-600">{ride.vehicle_type}</p>
                             </div>
                           )}
                           {ride.description && (
@@ -215,7 +274,7 @@ const RideManagement = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Ride Bookings</CardTitle>
+          <CardTitle>Current Bookings ({allBookings?.length || 0})</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -224,25 +283,30 @@ const RideManagement = () => {
                 No bookings have been made yet.
               </div>
             ) : (
-              allBookings?.slice(0, 10).map((booking) => (
+              allBookings?.map((booking) => (
                 <div key={booking.id} className="border rounded-lg p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div>
                         <h3 className="font-medium">
-                          {booking.profiles?.full_name || 'Unknown User'}
+                          {booking.profile?.full_name || 'Unknown User'}
                         </h3>
-                        <p className="text-sm text-gray-500">{booking.profiles?.email}</p>
-                        {booking.profiles?.phone_number && (
+                        <p className="text-sm text-gray-500">{booking.profile?.email || 'No email'}</p>
+                        {booking.profile?.phone_number && (
                           <div className="flex items-center gap-1 text-sm text-gray-500">
                             <Phone className="h-3 w-3" />
-                            <span>{booking.profiles.phone_number}</span>
+                            <span>{booking.profile.phone_number}</span>
                           </div>
                         )}
                       </div>
-                      <Badge variant="default">
-                        {booking.booking_status}
-                      </Badge>
+                      <div className="flex gap-2">
+                        <Badge variant="default">
+                          {booking.booking_status}
+                        </Badge>
+                        <Badge variant={booking.payment_status === 'paid' ? 'default' : 'secondary'}>
+                          {booking.payment_status}
+                        </Badge>
+                      </div>
                     </div>
                     <div className="text-right">
                       <p className="font-medium">₦{booking.total_amount}</p>
@@ -250,10 +314,11 @@ const RideManagement = () => {
                     </div>
                   </div>
                   
-                  {booking.rides && (
+                  {booking.ride && (
                     <div className="text-sm text-gray-600">
-                      <p><span className="font-medium">Route:</span> {booking.rides.from_location} → {booking.rides.to_location}</p>
-                      <p><span className="font-medium">Date:</span> {format(new Date(booking.rides.departure_date), 'MMM dd, yyyy')} at {booking.rides.departure_time}</p>
+                      <p><span className="font-medium">Route:</span> {booking.ride.from_location} → {booking.ride.to_location}</p>
+                      <p><span className="font-medium">Date:</span> {format(new Date(booking.ride.departure_date), 'MMM dd, yyyy')} at {booking.ride.departure_time}</p>
+                      <p><span className="font-medium">Booked:</span> {format(new Date(booking.created_at), 'MMM dd, yyyy HH:mm')}</p>
                     </div>
                   )}
                 </div>
