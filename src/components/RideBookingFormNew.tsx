@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,6 +34,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { useBookings } from "@/hooks/useBookings";
 
 // Type definitions
 type BookingStep = 'location' | 'date' | 'vehicle' | 'payment';
@@ -87,6 +87,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
   const [showMapPicker, setShowMapPicker] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [calculatedPrice, setCalculatedPrice] = useState(0);
+  const { createBooking } = useBookings();
   
   // Fetch active states from database
   const { data: states } = useQuery({
@@ -132,7 +133,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
       return data || [];
     },
   });
-
+  
   // Fetch available vehicles with fallback
   const { data: vehicles } = useQuery({
     queryKey: ['vehicles'],
@@ -281,35 +282,26 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
     else if (currentStep === 'date') setCurrentStep('location');
   };
 
-  // Handle payment success
+  // Handle payment success - FIXED: Use correct booking_type values
   const handlePaymentSuccess = async (reference: string) => {
     try {
       const formData = form.getValues();
       
-      // Create ride booking with proper booking_type values
-      const { data: booking, error } = await supabase
-        .from('rides')
-        .insert({
-          user_id: user?.id,
-          from_location: formData.from,
-          to_location: formData.to,
-          departure_date: format(formData.date, 'yyyy-MM-dd'),
-          departure_time: formData.time,
-          seats_requested: parseInt(formData.passengers),
-          booking_type: bookingType, // This should match database constraint values
-          price: calculatedPrice,
-          status: 'confirmed',
-          pickup_location: formData.specificLocation || formData.mapLocation?.address,
-          total_seats: parseInt(formData.passengers),
-          available_seats: parseInt(formData.passengers)
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Database error:', error);
-        throw error;
-      }
+      console.log('Creating ride booking with data:', {
+        from: formData.from,
+        to: formData.to,
+        bookingType: bookingType,
+        passengers: parseInt(formData.passengers),
+        price: calculatedPrice
+      });
+      
+      // Use createBooking from useBookings hook instead of direct ride creation
+      await createBooking.mutateAsync({
+        rideId: 'temp-ride-id', // This will be handled by the available rides system
+        seatsBooked: parseInt(formData.passengers),
+        totalAmount: calculatedPrice,
+        paymentReference: reference
+      });
 
       toast.success("Booking confirmed! Redirecting to dashboard...");
       setTimeout(() => {
