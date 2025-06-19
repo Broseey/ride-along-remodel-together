@@ -35,9 +35,10 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useBookings } from "@/hooks/useBookings";
+import { useAvailableRides } from "@/hooks/useAvailableRides";
 
 // Type definitions
-type BookingStep = 'location' | 'date' | 'vehicle' | 'payment';
+type BookingStep = 'location' | 'date' | 'vehicle' | 'rides' | 'payment';
 type BookingType = 'seat_booking' | 'full_ride';
 
 // Default vehicles if no data from Supabase
@@ -66,6 +67,7 @@ const bookingFormSchema = z.object({
   time: z.string().min(1, "Please select a time"),
   passengers: z.string().min(1, "Please select the number of passengers"),
   vehicleId: z.string().min(1, "Please select a vehicle"),
+  selectedRideId: z.string().optional(),
 });
 
 type BookingFormValues = z.infer<typeof bookingFormSchema>;
@@ -87,7 +89,10 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
   const [showMapPicker, setShowMapPicker] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [calculatedPrice, setCalculatedPrice] = useState(0);
-  const { createBooking } = useBookings();
+  const [matchingRides, setMatchingRides] = useState<any[]>([]);
+  const [selectedRide, setSelectedRide] = useState<any>(null);
+  const { createBooking, createRideRequest } = useBookings();
+  const { availableRides } = useAvailableRides();
   
   // Fetch active states from database
   const { data: states } = useQuery({
@@ -150,7 +155,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
     },
   });
 
-  // Get admin-configured travel times - simplified to just return time strings
+  // Get admin-configured travel times
   const { data: availableTimes } = useQuery({
     queryKey: ['available-times'],
     queryFn: async () => {
@@ -180,6 +185,8 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
   const watchVehicleId = form.watch("vehicleId");
   const watchMapLocation = form.watch("mapLocation");
   const watchPassengers = form.watch("passengers");
+  const watchDate = form.watch("date");
+  const watchTime = form.watch("time");
 
   // Set preselected route on component mount
   useEffect(() => {
@@ -197,10 +204,30 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
       setCurrentStep('date'); // Skip to date step since location is pre-filled
     }
   }, [preselectedRoute, form, states, universities]);
-  
-  // Calculate price based on route and vehicle
+
+  // Find matching rides when date and time are selected
   useEffect(() => {
-    if (watchFrom && watchTo && watchVehicleId && vehicles) {
+    if (watchFrom && watchTo && watchDate && watchTime && availableRides) {
+      const dateStr = format(watchDate, 'yyyy-MM-dd');
+      const matches = availableRides.filter(ride => 
+        ride.from_location === watchFrom &&
+        ride.to_location === watchTo &&
+        ride.departure_date === dateStr &&
+        ride.departure_time === watchTime &&
+        ride.status === 'available' &&
+        ride.available_seats > 0
+      );
+      setMatchingRides(matches);
+      console.log('Found matching rides:', matches);
+    }
+  }, [watchFrom, watchTo, watchDate, watchTime, availableRides]);
+  
+  // Calculate price based on route and vehicle or selected ride
+  useEffect(() => {
+    if (selectedRide) {
+      const totalPrice = selectedRide.price * parseInt(watchPassengers);
+      setCalculatedPrice(totalPrice);
+    } else if (watchFrom && watchTo && watchVehicleId && vehicles) {
       const selectedVehicle = vehicles.find(v => v.id === watchVehicleId);
       const routePrice = pricingData?.find(p => 
         (p.from_location === watchFrom && p.to_location === watchTo && p.vehicle_type === selectedVehicle?.name) ||
@@ -211,10 +238,8 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
         let basePrice = routePrice.base_price;
         
         if (bookingType === 'full_ride') {
-          // 10% discount for full ride booking
-          basePrice = basePrice * 0.9;
+          basePrice = basePrice * 0.9; // 10% discount for full ride booking
         } else {
-          // Per seat pricing using base_price_multiplier
           const multiplier = 'base_price_multiplier' in selectedVehicle ? selectedVehicle.base_price_multiplier : 1.0;
           basePrice = Math.round((basePrice * multiplier) / selectedVehicle.capacity) * parseInt(watchPassengers);
         }
@@ -234,7 +259,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
         setCalculatedPrice(basePrice);
       }
     }
-  }, [watchFrom, watchTo, watchVehicleId, watchPassengers, bookingType, pricingData, vehicles]);
+  }, [watchFrom, watchTo, watchVehicleId, watchPassengers, bookingType, pricingData, vehicles, selectedRide]);
   
   // Check authentication before allowing booking
   const checkAuthAndProceed = () => {
@@ -272,44 +297,65 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
     if (!checkAuthAndProceed()) return;
     
     if (currentStep === 'location') setCurrentStep('date');
-    else if (currentStep === 'date') setCurrentStep('vehicle');
+    else if (currentStep === 'date') {
+      // Check if there are matching rides, if so go to rides step, otherwise vehicle step
+      if (matchingRides.length > 0) {
+        setCurrentStep('rides');
+      } else {
+        setCurrentStep('vehicle');
+      }
+    }
+    else if (currentStep === 'rides') setCurrentStep('payment');
     else if (currentStep === 'vehicle') setCurrentStep('payment');
   };
 
   const prevStep = () => {
-    if (currentStep === 'payment') setCurrentStep('vehicle');
+    if (currentStep === 'payment') {
+      if (matchingRides.length > 0) {
+        setCurrentStep('rides');
+      } else {
+        setCurrentStep('vehicle');
+      }
+    }
+    else if (currentStep === 'rides') setCurrentStep('date');
     else if (currentStep === 'vehicle') setCurrentStep('date');
     else if (currentStep === 'date') setCurrentStep('location');
   };
 
-  // Handle payment success - FIXED: Use correct booking_type values
+  // Handle payment success
   const handlePaymentSuccess = async (reference: string) => {
     try {
       const formData = form.getValues();
       
-      console.log('Creating ride booking with data:', {
-        from: formData.from,
-        to: formData.to,
-        bookingType: bookingType,
-        passengers: parseInt(formData.passengers),
-        price: calculatedPrice
-      });
-      
-      // Use createBooking from useBookings hook instead of direct ride creation
-      await createBooking.mutateAsync({
-        rideId: 'temp-ride-id', // This will be handled by the available rides system
-        seatsBooked: parseInt(formData.passengers),
-        totalAmount: calculatedPrice,
-        paymentReference: reference
-      });
+      if (selectedRide) {
+        // Book existing ride
+        console.log('Booking existing ride:', selectedRide.id);
+        await createBooking.mutateAsync({
+          rideId: selectedRide.id,
+          seatsBooked: parseInt(formData.passengers),
+          totalAmount: calculatedPrice,
+          paymentReference: reference
+        });
+      } else {
+        // Create new ride request
+        console.log('Creating new ride request');
+        await createRideRequest.mutateAsync({
+          fromLocation: formData.from,
+          toLocation: formData.to,
+          departureDate: format(formData.date, 'yyyy-MM-dd'),
+          departureTime: formData.time,
+          seatsNeeded: parseInt(formData.passengers),
+          bookingType: bookingType
+        });
+      }
 
       toast.success("Booking confirmed! Redirecting to dashboard...");
       setTimeout(() => {
         navigate('/dashboard');
       }, 2000);
     } catch (error) {
-      console.error('Error creating booking:', error);
-      toast.error("Error creating booking. Please contact support.");
+      console.error('Error processing booking:', error);
+      toast.error("Error processing booking. Please contact support.");
     }
   };
 
@@ -404,9 +450,9 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 ${currentStep === 'date' ? 'bg-black text-white' : 'bg-gray-200'} transition-all duration-300`}>2</div>
                 <span className="text-xs">Date & Time</span>
               </div>
-              <div className={`flex flex-col items-center ${currentStep === 'vehicle' ? 'text-black' : 'text-gray-400'}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 ${currentStep === 'vehicle' ? 'bg-black text-white' : 'bg-gray-200'} transition-all duration-300`}>3</div>
-                <span className="text-xs">Vehicle</span>
+              <div className={`flex flex-col items-center ${currentStep === 'rides' || currentStep === 'vehicle' ? 'text-black' : 'text-gray-400'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 ${currentStep === 'rides' || currentStep === 'vehicle' ? 'bg-black text-white' : 'bg-gray-200'} transition-all duration-300`}>3</div>
+                <span className="text-xs">Options</span>
               </div>
               <div className={`flex flex-col items-center ${currentStep === 'payment' ? 'text-black' : 'text-gray-400'}`}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 ${currentStep === 'payment' ? 'bg-black text-white' : 'bg-gray-200'} transition-all duration-300`}>4</div>
@@ -416,7 +462,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
             <div className="mt-2 h-1 bg-gray-200 rounded-full">
               <div 
                 className="h-full bg-black rounded-full transition-all duration-500" 
-                style={{ width: currentStep === 'location' ? '25%' : currentStep === 'date' ? '50%' : currentStep === 'vehicle' ? '75%' : '100%' }}
+                style={{ width: currentStep === 'location' ? '25%' : currentStep === 'date' ? '50%' : (currentStep === 'rides' || currentStep === 'vehicle') ? '75%' : '100%' }}
               ></div>
             </div>
           </div>
@@ -792,6 +838,71 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
                       disabled={!isDateStepValid}
                     >
                       Next
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {currentStep === 'rides' && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Available Rides</h3>
+                  
+                  {matchingRides.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-600 mb-4">No existing rides found for your route and time.</p>
+                      <p className="text-sm text-gray-500">You can create a ride request or choose different options.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {matchingRides.map((ride) => (
+                        <div 
+                          key={ride.id}
+                          className={`p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
+                            selectedRide?.id === ride.id 
+                              ? 'border-black bg-black text-white' 
+                              : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+                          }`}
+                          onClick={() => {
+                            setSelectedRide(ride);
+                            form.setValue("selectedRideId", ride.id);
+                          }}
+                        >
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="font-medium">{ride.vehicle_type || 'Standard Vehicle'}</p>
+                              <p className="text-sm opacity-75">
+                                {ride.available_seats} seats available • ₦{ride.price} per seat
+                              </p>
+                              {ride.pickup_location && (
+                                <p className="text-xs opacity-60 mt-1">Pickup: {ride.pickup_location}</p>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <p className="font-bold">₦{(ride.price * parseInt(watchPassengers)).toLocaleString()}</p>
+                              <p className="text-xs opacity-75">for {watchPassengers} seat{parseInt(watchPassengers) > 1 ? 's' : ''}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <Button 
+                      type="button"
+                      variant="outline" 
+                      onClick={prevStep} 
+                      className="w-1/2 hover:bg-gray-100 transition-colors"
+                    >
+                      Back
+                    </Button>
+                    <Button 
+                      type="button"
+                      onClick={nextStep} 
+                      className="w-1/2 bg-black text-white hover:bg-gray-900 transform active:scale-95 transition-transform duration-200"
+                      disabled={matchingRides.length === 0 ? false : !selectedRide}
+                    >
+                      {matchingRides.length === 0 ? 'Create Request' : 'Continue'}
                     </Button>
                   </div>
                 </div>
