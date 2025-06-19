@@ -38,29 +38,7 @@ import { useQuery } from "@tanstack/react-query";
 
 // Type definitions
 type BookingStep = 'location' | 'date' | 'vehicle' | 'payment';
-type BookingType = 'join' | 'full';
-
-// Nigerian locations data
-const nigerianLocations = {
-  universities: [
-    "Babcock University, Ilishan-Remo",
-    "Afe Babalola University, Ado-Ekiti",
-    "Redeemer's University, Ede",
-    "Bowen University, Iwo",
-    "Covenant University, Ota",
-    "Lead City University, Ibadan",
-    "Pan-Atlantic University, Lagos",
-    "Landmark University, Omu-Aran",
-    "American University of Nigeria, Yola"
-  ],
-  states: [
-    "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", 
-    "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", 
-    "FCT - Abuja", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", 
-    "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", 
-    "Osun", "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"
-  ]
-};
+type BookingType = 'seat_booking' | 'full_ride';
 
 // Default vehicles if no data from Supabase
 const defaultVehicles = [
@@ -104,19 +82,48 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [currentStep, setCurrentStep] = useState<BookingStep>('location');
-  const [bookingType, setBookingType] = useState<BookingType>('join');
+  const [bookingType, setBookingType] = useState<BookingType>('seat_booking');
   const [showPreview, setShowPreview] = useState(false);
   const [showMapPicker, setShowMapPicker] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [calculatedPrice, setCalculatedPrice] = useState(0);
+  
+  // Fetch active states from database
+  const { data: states } = useQuery({
+    queryKey: ['active-states'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('states')
+        .select('name')
+        .eq('is_active', true)
+        .order('name');
+      if (error) throw error;
+      return data.map(s => s.name);
+    },
+  });
+
+  // Fetch active universities from database
+  const { data: universities } = useQuery({
+    queryKey: ['active-universities'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('universities')
+        .select('name')
+        .eq('is_active', true)
+        .order('name');
+      if (error) throw error;
+      return data.map(u => u.name);
+    },
+  });
   
   // Fetch pricing data from Supabase
   const { data: pricingData } = useQuery({
     queryKey: ['pricing'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('route_pricing')
-        .select('*');
+        .from('route_vehicle_pricing')
+        .select('*')
+        .eq('is_active', true);
       
       if (error) {
         console.error('Error fetching pricing:', error);
@@ -175,11 +182,11 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
 
   // Set preselected route on component mount
   useEffect(() => {
-    if (preselectedRoute) {
+    if (preselectedRoute && states && universities) {
       form.setValue("from", preselectedRoute.from);
       form.setValue("to", preselectedRoute.to);
       // Auto-determine types based on route
-      if (preselectedRoute.from.includes("University")) {
+      if (universities.includes(preselectedRoute.from)) {
         form.setValue("fromType", "university");
         form.setValue("toType", "state");
       } else {
@@ -188,21 +195,21 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
       }
       setCurrentStep('date'); // Skip to date step since location is pre-filled
     }
-  }, [preselectedRoute, form]);
+  }, [preselectedRoute, form, states, universities]);
   
   // Calculate price based on route and vehicle
   useEffect(() => {
     if (watchFrom && watchTo && watchVehicleId && vehicles) {
       const selectedVehicle = vehicles.find(v => v.id === watchVehicleId);
       const routePrice = pricingData?.find(p => 
-        (p.from_location === watchFrom && p.to_location === watchTo) ||
-        (p.from_location === watchTo && p.to_location === watchFrom)
+        (p.from_location === watchFrom && p.to_location === watchTo && p.vehicle_type === selectedVehicle?.name) ||
+        (p.from_location === watchTo && p.to_location === watchFrom && p.vehicle_type === selectedVehicle?.name)
       );
       
       if (selectedVehicle && routePrice) {
         let basePrice = routePrice.base_price;
         
-        if (bookingType === 'full') {
+        if (bookingType === 'full_ride') {
           // 10% discount for full ride booking
           basePrice = basePrice * 0.9;
         } else {
@@ -217,7 +224,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
         const multiplier = 'base_price_multiplier' in selectedVehicle ? selectedVehicle.base_price_multiplier : 1.0;
         let basePrice = 5000 * multiplier; // Default base price
         
-        if (bookingType === 'full') {
+        if (bookingType === 'full_ride') {
           basePrice = basePrice * 0.9;
         } else {
           basePrice = Math.round(basePrice / selectedVehicle.capacity) * parseInt(watchPassengers);
@@ -245,7 +252,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
        (watchFromType === 'state' && watchToType === 'university'));
     
     // For "book entire ride", also require specific location OR map location
-    if (bookingType === 'full') {
+    if (bookingType === 'full_ride') {
       return baseValid && (form.watch("specificLocation") || watchMapLocation);
     }
     
@@ -279,7 +286,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
     try {
       const formData = form.getValues();
       
-      // Create ride booking
+      // Create ride booking with proper booking_type values
       const { data: booking, error } = await supabase
         .from('rides')
         .insert({
@@ -289,7 +296,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
           departure_date: format(formData.date, 'yyyy-MM-dd'),
           departure_time: formData.time,
           seats_requested: parseInt(formData.passengers),
-          booking_type: bookingType,
+          booking_type: bookingType, // This should match database constraint values
           price: calculatedPrice,
           status: 'confirmed',
           pickup_location: formData.specificLocation || formData.mapLocation?.address,
@@ -299,7 +306,10 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
 
       toast.success("Booking confirmed! Redirecting to dashboard...");
       setTimeout(() => {
@@ -345,6 +355,20 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
     form.setValue("specificLocation", "");
   };
 
+  // Loading states
+  if (!states || !universities) {
+    return (
+      <Card className="w-full mx-auto md:mx-0 max-w-lg shadow-lg">
+        <div className="p-6">
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+            <span className="ml-2">Loading locations...</span>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
   if (showPayment) {
     const formData = form.getValues();
     return (
@@ -373,8 +397,8 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
           
           <Tabs value={bookingType} onValueChange={(v) => setBookingType(v as BookingType)} className="mb-6 rounded-[3.5rem]">
             <TabsList className="grid w-full grid-cols-2 rounded-[2rem]">
-              <TabsTrigger value="join" className="data-[state=active]:bg-black data-[state=active]:text-white hover:bg-gray-100 transition-colors rounded-[1.5rem]">Book Seat</TabsTrigger>
-              <TabsTrigger value="full" className="data-[state=active]:bg-black data-[state=active]:text-white hover:bg-gray-100 transition-colors rounded-[1.5rem]">Book Entire Ride</TabsTrigger>
+              <TabsTrigger value="seat_booking" className="data-[state=active]:bg-black data-[state=active]:text-white hover:bg-gray-100 transition-colors rounded-[1.5rem]">Book Seat</TabsTrigger>
+              <TabsTrigger value="full_ride" className="data-[state=active]:bg-black data-[state=active]:text-white hover:bg-gray-100 transition-colors rounded-[1.5rem]">Book Entire Ride</TabsTrigger>
             </TabsList>
           </Tabs>
 
@@ -462,10 +486,10 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
                                 </FormControl>
                                 <SelectContent>
                                   {watchFromType === "university"
-                                    ? nigerianLocations.universities.map((loc) => (
+                                    ? universities.map((loc) => (
                                         <SelectItem key={loc} value={loc}>{loc}</SelectItem>
                                       ))
-                                    : nigerianLocations.states.map((loc) => (
+                                    : states.map((loc) => (
                                         <SelectItem key={loc} value={loc}>{loc}</SelectItem>
                                       ))
                                   }
@@ -546,10 +570,10 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
                                 </FormControl>
                                 <SelectContent>
                                   {watchToType === "university"
-                                    ? nigerianLocations.universities.map((loc) => (
+                                    ? universities.map((loc) => (
                                         <SelectItem key={loc} value={loc}>{loc}</SelectItem>
                                       ))
-                                    : nigerianLocations.states.map((loc) => (
+                                    : states.map((loc) => (
                                         <SelectItem key={loc} value={loc}>{loc}</SelectItem>
                                       ))
                                   }
@@ -578,7 +602,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
                   </div>
 
                   {/* Specific Location for "Book Entire Ride" with Map Option */}
-                  {bookingType === 'full' && (watchFrom || watchTo) && (
+                  {bookingType === 'full_ride' && (watchFrom || watchTo) && (
                     <div className="space-y-3">
                       <FormField
                         control={form.control}
@@ -820,7 +844,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
                       <div className="text-sm text-gray-600 mt-1">
                         <p>Capacity: {selectedVehicle.capacity} passengers</p>
                         <p>Price: ₦{calculatedPrice.toLocaleString()}</p>
-                        {bookingType === 'full' && (
+                        {bookingType === 'full_ride' && (
                           <p className="text-green-600">10% discount applied for full ride booking!</p>
                         )}
                       </div>
@@ -841,7 +865,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
                       className="w-1/2 bg-black text-white hover:bg-gray-900 transform active:scale-95 transition-transform duration-200"
                       disabled={!watchVehicleId}
                     >
-                      {bookingType === 'join' ? 'Book Seat' : 'Book Entire Ride'}
+                      {bookingType === 'seat_booking' ? 'Book Seat' : 'Book Entire Ride'}
                     </Button>
                   </div>
                 </div>

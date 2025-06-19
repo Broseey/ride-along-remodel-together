@@ -90,7 +90,7 @@ const CreateRide = () => {
           pickup_location: data.pickup_location,
           description: data.description,
           user_id: user.id,
-          booking_type: 'admin_created',
+          booking_type: 'admin_created', // Use correct booking_type value
           status: 'available',
           seats_requested: 0,
         })
