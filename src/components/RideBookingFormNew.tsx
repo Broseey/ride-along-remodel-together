@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -34,12 +35,32 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { useBookings } from "@/hooks/useBookings";
-import { useAvailableRides } from "@/hooks/useAvailableRides";
 
 // Type definitions
-type BookingStep = 'location' | 'date' | 'vehicle' | 'rides' | 'payment';
-type BookingType = 'seat_booking' | 'full_ride';
+type BookingStep = 'location' | 'date' | 'vehicle' | 'payment';
+type BookingType = 'join' | 'full';
+
+// Nigerian locations data
+const nigerianLocations = {
+  universities: [
+    "Babcock University, Ilishan-Remo",
+    "Afe Babalola University, Ado-Ekiti",
+    "Redeemer's University, Ede",
+    "Bowen University, Iwo",
+    "Covenant University, Ota",
+    "Lead City University, Ibadan",
+    "Pan-Atlantic University, Lagos",
+    "Landmark University, Omu-Aran",
+    "American University of Nigeria, Yola"
+  ],
+  states: [
+    "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", 
+    "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", 
+    "FCT - Abuja", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", 
+    "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", 
+    "Osun", "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"
+  ]
+};
 
 // Default vehicles if no data from Supabase
 const defaultVehicles = [
@@ -67,7 +88,6 @@ const bookingFormSchema = z.object({
   time: z.string().min(1, "Please select a time"),
   passengers: z.string().min(1, "Please select the number of passengers"),
   vehicleId: z.string().min(1, "Please select a vehicle"),
-  selectedRideId: z.string().optional(),
 });
 
 type BookingFormValues = z.infer<typeof bookingFormSchema>;
@@ -84,52 +104,19 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [currentStep, setCurrentStep] = useState<BookingStep>('location');
-  const [bookingType, setBookingType] = useState<BookingType>('seat_booking');
+  const [bookingType, setBookingType] = useState<BookingType>('join');
   const [showPreview, setShowPreview] = useState(false);
   const [showMapPicker, setShowMapPicker] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [calculatedPrice, setCalculatedPrice] = useState(0);
-  const [matchingRides, setMatchingRides] = useState<any[]>([]);
-  const [selectedRide, setSelectedRide] = useState<any>(null);
-  const { createBooking, createRideRequest } = useBookings();
-  const { availableRides } = useAvailableRides();
-  
-  // Fetch active states from database
-  const { data: states } = useQuery({
-    queryKey: ['active-states'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('states')
-        .select('name')
-        .eq('is_active', true)
-        .order('name');
-      if (error) throw error;
-      return data.map(s => s.name);
-    },
-  });
-
-  // Fetch active universities from database
-  const { data: universities } = useQuery({
-    queryKey: ['active-universities'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('universities')
-        .select('name')
-        .eq('is_active', true)
-        .order('name');
-      if (error) throw error;
-      return data.map(u => u.name);
-    },
-  });
   
   // Fetch pricing data from Supabase
   const { data: pricingData } = useQuery({
     queryKey: ['pricing'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('route_vehicle_pricing')
-        .select('*')
-        .eq('is_active', true);
+        .from('route_pricing')
+        .select('*');
       
       if (error) {
         console.error('Error fetching pricing:', error);
@@ -138,7 +125,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
       return data || [];
     },
   });
-  
+
   // Fetch available vehicles with fallback
   const { data: vehicles } = useQuery({
     queryKey: ['vehicles'],
@@ -155,7 +142,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
     },
   });
 
-  // Get admin-configured travel times
+  // Get admin-configured travel times - simplified to just return time strings
   const { data: availableTimes } = useQuery({
     queryKey: ['available-times'],
     queryFn: async () => {
@@ -185,16 +172,14 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
   const watchVehicleId = form.watch("vehicleId");
   const watchMapLocation = form.watch("mapLocation");
   const watchPassengers = form.watch("passengers");
-  const watchDate = form.watch("date");
-  const watchTime = form.watch("time");
 
   // Set preselected route on component mount
   useEffect(() => {
-    if (preselectedRoute && states && universities) {
+    if (preselectedRoute) {
       form.setValue("from", preselectedRoute.from);
       form.setValue("to", preselectedRoute.to);
       // Auto-determine types based on route
-      if (universities.includes(preselectedRoute.from)) {
+      if (preselectedRoute.from.includes("University")) {
         form.setValue("fromType", "university");
         form.setValue("toType", "state");
       } else {
@@ -203,43 +188,25 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
       }
       setCurrentStep('date'); // Skip to date step since location is pre-filled
     }
-  }, [preselectedRoute, form, states, universities]);
-
-  // Find matching rides when date and time are selected
-  useEffect(() => {
-    if (watchFrom && watchTo && watchDate && watchTime && availableRides) {
-      const dateStr = format(watchDate, 'yyyy-MM-dd');
-      const matches = availableRides.filter(ride => 
-        ride.from_location === watchFrom &&
-        ride.to_location === watchTo &&
-        ride.departure_date === dateStr &&
-        ride.departure_time === watchTime &&
-        ride.status === 'available' &&
-        ride.available_seats > 0
-      );
-      setMatchingRides(matches);
-      console.log('Found matching rides:', matches);
-    }
-  }, [watchFrom, watchTo, watchDate, watchTime, availableRides]);
+  }, [preselectedRoute, form]);
   
-  // Calculate price based on route and vehicle or selected ride
+  // Calculate price based on route and vehicle
   useEffect(() => {
-    if (selectedRide) {
-      const totalPrice = selectedRide.price * parseInt(watchPassengers);
-      setCalculatedPrice(totalPrice);
-    } else if (watchFrom && watchTo && watchVehicleId && vehicles) {
+    if (watchFrom && watchTo && watchVehicleId && vehicles) {
       const selectedVehicle = vehicles.find(v => v.id === watchVehicleId);
       const routePrice = pricingData?.find(p => 
-        (p.from_location === watchFrom && p.to_location === watchTo && p.vehicle_type === selectedVehicle?.name) ||
-        (p.from_location === watchTo && p.to_location === watchFrom && p.vehicle_type === selectedVehicle?.name)
+        (p.from_location === watchFrom && p.to_location === watchTo) ||
+        (p.from_location === watchTo && p.to_location === watchFrom)
       );
       
       if (selectedVehicle && routePrice) {
         let basePrice = routePrice.base_price;
         
-        if (bookingType === 'full_ride') {
-          basePrice = basePrice * 0.9; // 10% discount for full ride booking
+        if (bookingType === 'full') {
+          // 10% discount for full ride booking
+          basePrice = basePrice * 0.9;
         } else {
+          // Per seat pricing using base_price_multiplier
           const multiplier = 'base_price_multiplier' in selectedVehicle ? selectedVehicle.base_price_multiplier : 1.0;
           basePrice = Math.round((basePrice * multiplier) / selectedVehicle.capacity) * parseInt(watchPassengers);
         }
@@ -250,7 +217,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
         const multiplier = 'base_price_multiplier' in selectedVehicle ? selectedVehicle.base_price_multiplier : 1.0;
         let basePrice = 5000 * multiplier; // Default base price
         
-        if (bookingType === 'full_ride') {
+        if (bookingType === 'full') {
           basePrice = basePrice * 0.9;
         } else {
           basePrice = Math.round(basePrice / selectedVehicle.capacity) * parseInt(watchPassengers);
@@ -259,7 +226,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
         setCalculatedPrice(basePrice);
       }
     }
-  }, [watchFrom, watchTo, watchVehicleId, watchPassengers, bookingType, pricingData, vehicles, selectedRide]);
+  }, [watchFrom, watchTo, watchVehicleId, watchPassengers, bookingType, pricingData, vehicles]);
   
   // Check authentication before allowing booking
   const checkAuthAndProceed = () => {
@@ -278,7 +245,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
        (watchFromType === 'state' && watchToType === 'university'));
     
     // For "book entire ride", also require specific location OR map location
-    if (bookingType === 'full_ride') {
+    if (bookingType === 'full') {
       return baseValid && (form.watch("specificLocation") || watchMapLocation);
     }
     
@@ -297,27 +264,12 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
     if (!checkAuthAndProceed()) return;
     
     if (currentStep === 'location') setCurrentStep('date');
-    else if (currentStep === 'date') {
-      // Check if there are matching rides, if so go to rides step, otherwise vehicle step
-      if (matchingRides.length > 0) {
-        setCurrentStep('rides');
-      } else {
-        setCurrentStep('vehicle');
-      }
-    }
-    else if (currentStep === 'rides') setCurrentStep('payment');
+    else if (currentStep === 'date') setCurrentStep('vehicle');
     else if (currentStep === 'vehicle') setCurrentStep('payment');
   };
 
   const prevStep = () => {
-    if (currentStep === 'payment') {
-      if (matchingRides.length > 0) {
-        setCurrentStep('rides');
-      } else {
-        setCurrentStep('vehicle');
-      }
-    }
-    else if (currentStep === 'rides') setCurrentStep('date');
+    if (currentStep === 'payment') setCurrentStep('vehicle');
     else if (currentStep === 'vehicle') setCurrentStep('date');
     else if (currentStep === 'date') setCurrentStep('location');
   };
@@ -327,35 +279,35 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
     try {
       const formData = form.getValues();
       
-      if (selectedRide) {
-        // Book existing ride
-        console.log('Booking existing ride:', selectedRide.id);
-        await createBooking.mutateAsync({
-          rideId: selectedRide.id,
-          seatsBooked: parseInt(formData.passengers),
-          totalAmount: calculatedPrice,
-          paymentReference: reference
-        });
-      } else {
-        // Create new ride request
-        console.log('Creating new ride request');
-        await createRideRequest.mutateAsync({
-          fromLocation: formData.from,
-          toLocation: formData.to,
-          departureDate: format(formData.date, 'yyyy-MM-dd'),
-          departureTime: formData.time,
-          seatsNeeded: parseInt(formData.passengers),
-          bookingType: bookingType
-        });
-      }
+      // Create ride booking
+      const { data: booking, error } = await supabase
+        .from('rides')
+        .insert({
+          user_id: user?.id,
+          from_location: formData.from,
+          to_location: formData.to,
+          departure_date: format(formData.date, 'yyyy-MM-dd'),
+          departure_time: formData.time,
+          seats_requested: parseInt(formData.passengers),
+          booking_type: bookingType,
+          price: calculatedPrice,
+          status: 'confirmed',
+          pickup_location: formData.specificLocation || formData.mapLocation?.address,
+          total_seats: parseInt(formData.passengers),
+          available_seats: parseInt(formData.passengers)
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
 
       toast.success("Booking confirmed! Redirecting to dashboard...");
       setTimeout(() => {
         navigate('/dashboard');
       }, 2000);
     } catch (error) {
-      console.error('Error processing booking:', error);
-      toast.error("Error processing booking. Please contact support.");
+      console.error('Error creating booking:', error);
+      toast.error("Error creating booking. Please contact support.");
     }
   };
 
@@ -393,20 +345,6 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
     form.setValue("specificLocation", "");
   };
 
-  // Loading states
-  if (!states || !universities) {
-    return (
-      <Card className="w-full mx-auto md:mx-0 max-w-lg shadow-lg">
-        <div className="p-6">
-          <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
-            <span className="ml-2">Loading locations...</span>
-          </div>
-        </div>
-      </Card>
-    );
-  }
-
   if (showPayment) {
     const formData = form.getValues();
     return (
@@ -435,8 +373,8 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
           
           <Tabs value={bookingType} onValueChange={(v) => setBookingType(v as BookingType)} className="mb-6 rounded-[3.5rem]">
             <TabsList className="grid w-full grid-cols-2 rounded-[2rem]">
-              <TabsTrigger value="seat_booking" className="data-[state=active]:bg-black data-[state=active]:text-white hover:bg-gray-100 transition-colors rounded-[1.5rem]">Book Seat</TabsTrigger>
-              <TabsTrigger value="full_ride" className="data-[state=active]:bg-black data-[state=active]:text-white hover:bg-gray-100 transition-colors rounded-[1.5rem]">Book Entire Ride</TabsTrigger>
+              <TabsTrigger value="join" className="data-[state=active]:bg-black data-[state=active]:text-white hover:bg-gray-100 transition-colors rounded-[1.5rem]">Book Seat</TabsTrigger>
+              <TabsTrigger value="full" className="data-[state=active]:bg-black data-[state=active]:text-white hover:bg-gray-100 transition-colors rounded-[1.5rem]">Book Entire Ride</TabsTrigger>
             </TabsList>
           </Tabs>
 
@@ -450,9 +388,9 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 ${currentStep === 'date' ? 'bg-black text-white' : 'bg-gray-200'} transition-all duration-300`}>2</div>
                 <span className="text-xs">Date & Time</span>
               </div>
-              <div className={`flex flex-col items-center ${currentStep === 'rides' || currentStep === 'vehicle' ? 'text-black' : 'text-gray-400'}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 ${currentStep === 'rides' || currentStep === 'vehicle' ? 'bg-black text-white' : 'bg-gray-200'} transition-all duration-300`}>3</div>
-                <span className="text-xs">Options</span>
+              <div className={`flex flex-col items-center ${currentStep === 'vehicle' ? 'text-black' : 'text-gray-400'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 ${currentStep === 'vehicle' ? 'bg-black text-white' : 'bg-gray-200'} transition-all duration-300`}>3</div>
+                <span className="text-xs">Vehicle</span>
               </div>
               <div className={`flex flex-col items-center ${currentStep === 'payment' ? 'text-black' : 'text-gray-400'}`}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 ${currentStep === 'payment' ? 'bg-black text-white' : 'bg-gray-200'} transition-all duration-300`}>4</div>
@@ -462,7 +400,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
             <div className="mt-2 h-1 bg-gray-200 rounded-full">
               <div 
                 className="h-full bg-black rounded-full transition-all duration-500" 
-                style={{ width: currentStep === 'location' ? '25%' : currentStep === 'date' ? '50%' : (currentStep === 'rides' || currentStep === 'vehicle') ? '75%' : '100%' }}
+                style={{ width: currentStep === 'location' ? '25%' : currentStep === 'date' ? '50%' : currentStep === 'vehicle' ? '75%' : '100%' }}
               ></div>
             </div>
           </div>
@@ -524,10 +462,10 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
                                 </FormControl>
                                 <SelectContent>
                                   {watchFromType === "university"
-                                    ? universities.map((loc) => (
+                                    ? nigerianLocations.universities.map((loc) => (
                                         <SelectItem key={loc} value={loc}>{loc}</SelectItem>
                                       ))
-                                    : states.map((loc) => (
+                                    : nigerianLocations.states.map((loc) => (
                                         <SelectItem key={loc} value={loc}>{loc}</SelectItem>
                                       ))
                                   }
@@ -608,10 +546,10 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
                                 </FormControl>
                                 <SelectContent>
                                   {watchToType === "university"
-                                    ? universities.map((loc) => (
+                                    ? nigerianLocations.universities.map((loc) => (
                                         <SelectItem key={loc} value={loc}>{loc}</SelectItem>
                                       ))
-                                    : states.map((loc) => (
+                                    : nigerianLocations.states.map((loc) => (
                                         <SelectItem key={loc} value={loc}>{loc}</SelectItem>
                                       ))
                                   }
@@ -640,7 +578,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
                   </div>
 
                   {/* Specific Location for "Book Entire Ride" with Map Option */}
-                  {bookingType === 'full_ride' && (watchFrom || watchTo) && (
+                  {bookingType === 'full' && (watchFrom || watchTo) && (
                     <div className="space-y-3">
                       <FormField
                         control={form.control}
@@ -843,71 +781,6 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
                 </div>
               )}
 
-              {currentStep === 'rides' && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Available Rides</h3>
-                  
-                  {matchingRides.length === 0 ? (
-                    <div className="text-center py-8">
-                      <p className="text-gray-600 mb-4">No existing rides found for your route and time.</p>
-                      <p className="text-sm text-gray-500">You can create a ride request or choose different options.</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {matchingRides.map((ride) => (
-                        <div 
-                          key={ride.id}
-                          className={`p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
-                            selectedRide?.id === ride.id 
-                              ? 'border-black bg-black text-white' 
-                              : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
-                          }`}
-                          onClick={() => {
-                            setSelectedRide(ride);
-                            form.setValue("selectedRideId", ride.id);
-                          }}
-                        >
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="font-medium">{ride.vehicle_type || 'Standard Vehicle'}</p>
-                              <p className="text-sm opacity-75">
-                                {ride.available_seats} seats available • ₦{ride.price} per seat
-                              </p>
-                              {ride.pickup_location && (
-                                <p className="text-xs opacity-60 mt-1">Pickup: {ride.pickup_location}</p>
-                              )}
-                            </div>
-                            <div className="text-right">
-                              <p className="font-bold">₦{(ride.price * parseInt(watchPassengers)).toLocaleString()}</p>
-                              <p className="text-xs opacity-75">for {watchPassengers} seat{parseInt(watchPassengers) > 1 ? 's' : ''}</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="flex gap-2">
-                    <Button 
-                      type="button"
-                      variant="outline" 
-                      onClick={prevStep} 
-                      className="w-1/2 hover:bg-gray-100 transition-colors"
-                    >
-                      Back
-                    </Button>
-                    <Button 
-                      type="button"
-                      onClick={nextStep} 
-                      className="w-1/2 bg-black text-white hover:bg-gray-900 transform active:scale-95 transition-transform duration-200"
-                      disabled={matchingRides.length === 0 ? false : !selectedRide}
-                    >
-                      {matchingRides.length === 0 ? 'Create Request' : 'Continue'}
-                    </Button>
-                  </div>
-                </div>
-              )}
-
               {currentStep === 'vehicle' && (
                 <div className="space-y-4">
                   {/* Vehicle Selection */}
@@ -947,7 +820,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
                       <div className="text-sm text-gray-600 mt-1">
                         <p>Capacity: {selectedVehicle.capacity} passengers</p>
                         <p>Price: ₦{calculatedPrice.toLocaleString()}</p>
-                        {bookingType === 'full_ride' && (
+                        {bookingType === 'full' && (
                           <p className="text-green-600">10% discount applied for full ride booking!</p>
                         )}
                       </div>
@@ -968,7 +841,7 @@ const RideBookingFormNew = ({ preselectedRoute }: RideBookingFormNewProps) => {
                       className="w-1/2 bg-black text-white hover:bg-gray-900 transform active:scale-95 transition-transform duration-200"
                       disabled={!watchVehicleId}
                     >
-                      {bookingType === 'seat_booking' ? 'Book Seat' : 'Book Entire Ride'}
+                      {bookingType === 'join' ? 'Book Seat' : 'Book Entire Ride'}
                     </Button>
                   </div>
                 </div>

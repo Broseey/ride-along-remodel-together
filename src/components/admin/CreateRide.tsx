@@ -73,44 +73,32 @@ const CreateRide = () => {
 
   const createRide = useMutation({
     mutationFn: async (data: FormData) => {
-      console.log('Creating ride with data:', data);
-      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
-      // FIXED: Use correct booking_type value that matches database constraint
-      const rideData = {
-        from_location: data.from_location,
-        to_location: data.to_location,
-        departure_date: data.departure_date,
-        departure_time: data.departure_time,
-        total_seats: data.total_seats,
-        available_seats: data.total_seats,
-        price: data.price,
-        vehicle_type: data.vehicle_type,
-        pickup_location: data.pickup_location,
-        description: data.description,
-        user_id: user.id,
-        booking_type: 'admin_created', // Use valid booking_type value
-        status: 'available',
-        seats_requested: 0,
-      };
-
-      console.log('Inserting ride data:', rideData);
-
-      const { data: rideResult, error } = await supabase
+      const { data: rideData, error } = await supabase
         .from('rides')
-        .insert(rideData)
+        .insert({
+          from_location: data.from_location,
+          to_location: data.to_location,
+          departure_date: data.departure_date,
+          departure_time: data.departure_time,
+          total_seats: data.total_seats,
+          available_seats: data.total_seats,
+          price: data.price,
+          vehicle_type: data.vehicle_type,
+          pickup_location: data.pickup_location,
+          description: data.description,
+          user_id: user.id,
+          booking_type: 'admin_created',
+          status: 'available',
+          seats_requested: 0,
+        })
         .select()
         .single();
       
-      if (error) {
-        console.error('Database error:', error);
-        throw error;
-      }
-      
-      console.log('Ride created successfully:', rideResult);
-      return rideResult;
+      if (error) throw error;
+      return rideData;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-rides'] });
@@ -120,7 +108,6 @@ const CreateRide = () => {
       reset();
     },
     onError: (error: any) => {
-      console.error('Ride creation error:', error);
       toast.error(error.message || 'Failed to create ride');
     },
   });

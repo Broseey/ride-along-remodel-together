@@ -30,7 +30,7 @@ export const useBookings = () => {
     },
   });
 
-  // Create a new booking for an existing ride
+  // Create a new booking
   const createBooking = useMutation({
     mutationFn: async ({ rideId, seatsBooked, totalAmount, paymentReference }: {
       rideId: string;
@@ -44,37 +44,34 @@ export const useBookings = () => {
       console.log('Creating booking for user:', user.id);
       console.log('Booking details:', { rideId, seatsBooked, totalAmount, paymentReference });
 
-      // Verify the ride exists and has enough seats
+      // Check if ride exists and has enough available seats
       const { data: ride, error: rideError } = await supabase
         .from('rides')
-        .select('*')
+        .select('available_seats, total_seats, price')
         .eq('id', rideId)
-        .eq('status', 'available')
         .single();
 
-      if (rideError || !ride) {
-        throw new Error('Ride not found or no longer available');
+      if (rideError) {
+        console.error('Error fetching ride:', rideError);
+        throw new Error('Ride not found');
       }
 
-      if (ride.available_seats < seatsBooked) {
+      if (!ride || ride.available_seats < seatsBooked) {
         throw new Error('Not enough seats available');
       }
 
-      const bookingData = {
-        ride_id: rideId,
-        user_id: user.id,
-        seats_booked: seatsBooked,
-        total_amount: totalAmount,
-        booking_status: 'confirmed',
-        payment_status: paymentReference ? 'paid' : 'pending',
-        payment_reference: paymentReference
-      };
-
-      console.log('Inserting booking data:', bookingData);
-
+      // Create the booking
       const { data, error } = await supabase
         .from('bookings')
-        .insert(bookingData)
+        .insert({
+          ride_id: rideId,
+          user_id: user.id,
+          seats_booked: seatsBooked,
+          total_amount: totalAmount,
+          booking_status: 'confirmed',
+          payment_status: paymentReference ? 'paid' : 'pending',
+          payment_reference: paymentReference
+        })
         .select(`
           *,
           rides(*)
@@ -97,61 +94,7 @@ export const useBookings = () => {
     },
     onError: (error: any) => {
       console.error('Booking mutation error:', error);
-      toast.error(error.message || 'Failed to create booking. Please try again.');
-    },
-  });
-
-  // Create a new ride request (for when no existing rides match)
-  const createRideRequest = useMutation({
-    mutationFn: async ({ 
-      fromLocation, 
-      toLocation, 
-      departureDate, 
-      departureTime, 
-      seatsNeeded, 
-      bookingType 
-    }: {
-      fromLocation: string;
-      toLocation: string;
-      departureDate: string;
-      departureTime: string;
-      seatsNeeded: number;
-      bookingType: 'seat_booking' | 'full_ride';
-    }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user found - please log in');
-
-      const rideData = {
-        from_location: fromLocation,
-        to_location: toLocation,
-        departure_date: departureDate,
-        departure_time: departureTime,
-        seats_requested: seatsNeeded,
-        booking_type: bookingType,
-        user_id: user.id,
-        status: 'pending'
-      };
-
-      const { data, error } = await supabase
-        .from('rides')
-        .insert(rideData)
-        .select()
-        .single();
-      
-      if (error) {
-        console.error('Error creating ride request:', error);
-        throw new Error(`Failed to create ride request: ${error.message}`);
-      }
-
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rides'] });
-      toast.success('Ride request submitted successfully! We\'ll notify you when a match is found.');
-    },
-    onError: (error: any) => {
-      console.error('Ride request error:', error);
-      toast.error(error.message || 'Failed to create ride request. Please try again.');
+      toast.error(error.message || 'Failed to create booking');
     },
   });
 
@@ -159,6 +102,5 @@ export const useBookings = () => {
     userBookings,
     isLoadingBookings,
     createBooking,
-    createRideRequest,
   };
 };
