@@ -13,20 +13,53 @@ export const useBookings = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      const { data, error } = await supabase
+      console.log('Fetching user bookings for user:', user.id);
+
+      // First get the bookings
+      const { data: bookingsData, error: bookingsError } = await supabase
         .from('bookings')
-        .select(`
-          *,
-          rides!inner(*)
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       
-      if (error) {
-        console.error('Error fetching bookings:', error);
-        throw error;
+      if (bookingsError) {
+        console.error('Error fetching bookings:', bookingsError);
+        throw bookingsError;
       }
-      return data || [];
+
+      if (!bookingsData || bookingsData.length === 0) {
+        return [];
+      }
+
+      // Get the ride IDs from bookings
+      const rideIds = bookingsData.map(booking => booking.ride_id);
+
+      // Fetch the associated rides
+      const { data: ridesData, error: ridesError } = await supabase
+        .from('rides')
+        .select('*')
+        .in('id', rideIds);
+
+      if (ridesError) {
+        console.error('Error fetching rides for bookings:', ridesError);
+        throw ridesError;
+      }
+
+      // Create a map of rides for easy lookup
+      const ridesMap = new Map();
+      if (ridesData) {
+        ridesData.forEach(ride => {
+          ridesMap.set(ride.id, ride);
+        });
+      }
+
+      // Combine bookings with ride data
+      const bookingsWithRides = bookingsData.map(booking => ({
+        ...booking,
+        rides: ridesMap.get(booking.ride_id)
+      }));
+
+      return bookingsWithRides;
     },
   });
 
@@ -44,20 +77,33 @@ export const useBookings = () => {
       console.log('Creating booking for user:', user.id);
       console.log('Booking details:', { rideId, seatsBooked, totalAmount, paymentReference });
 
+      // Validate that the ride ID is a proper UUID
+      if (!rideId || rideId === 'temp-ride-id' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rideId)) {
+        throw new Error('Invalid ride selected. Please select a valid ride.');
+      }
+
       // Check if ride exists and has enough available seats
       const { data: ride, error: rideError } = await supabase
         .from('rides')
-        .select('available_seats, total_seats, price')
+        .select('available_seats, total_seats, price, status')
         .eq('id', rideId)
         .single();
 
       if (rideError) {
         console.error('Error fetching ride:', rideError);
+        throw new Error('Ride not found or no longer available');
+      }
+
+      if (!ride) {
         throw new Error('Ride not found');
       }
 
-      if (!ride || ride.available_seats < seatsBooked) {
-        throw new Error('Not enough seats available');
+      if (ride.status !== 'available' && ride.status !== 'confirmed') {
+        throw new Error('This ride is no longer available for booking');
+      }
+
+      if (ride.available_seats < seatsBooked) {
+        throw new Error(`Only ${ride.available_seats} seats available. You requested ${seatsBooked} seats.`);
       }
 
       // Create the booking
@@ -72,10 +118,7 @@ export const useBookings = () => {
           payment_status: paymentReference ? 'paid' : 'pending',
           payment_reference: paymentReference
         })
-        .select(`
-          *,
-          rides(*)
-        `)
+        .select()
         .single();
       
       if (error) {
@@ -84,6 +127,21 @@ export const useBookings = () => {
       }
 
       console.log('Booking created successfully:', data);
+
+      // Update the ride's available seats
+      const { error: updateError } = await supabase
+        .from('rides')
+        .update({ 
+          available_seats: ride.available_seats - seatsBooked,
+          status: ride.available_seats - seatsBooked === 0 ? 'confirmed' : 'available'
+        })
+        .eq('id', rideId);
+
+      if (updateError) {
+        console.error('Error updating ride seats:', updateError);
+        // Don't throw here as the booking was successful
+      }
+
       return data;
     },
     onSuccess: (data) => {
