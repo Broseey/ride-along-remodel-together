@@ -351,7 +351,7 @@ const About = () => {
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-center">
-              Letter from the Director
+              A word from Our Brand Designer
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-6">
@@ -361,58 +361,35 @@ const About = () => {
               </div>
               <div>
                 <h3 className="font-bold text-lg">Ademide Ajala</h3>
-                <p className="text-gray-600">Innovative Brand Designer</p>
+                <p className="text-gray-600">Innovative Brand Designer, Uniride</p>
               </div>
             </div>
 
             <div className="prose max-w-none">
               <Quote className="h-8 w-8 text-gray-400 mb-4" />
               <p className="text-lg leading-relaxed mb-4">
-                Dear Students, Parents, and Educational Community,
+                Dear Uniride Community,
               </p>
               <p className="mb-4">
-                As someone who has dedicated over 20 years to Nigerian higher
-                education, I've witnessed countless talented students struggle
-                with transportation challenges that threatened to derail their
-                academic dreams. It's this experience that drew me to Uniride's
-                mission and convinced me to join this revolutionary platform.
+                As Uniride grows, so does our purpose—not just to move people from place to place, but to design a future where transportation feels effortless, personal, and human.
               </p>
               <p className="mb-4">
-                During my tenure as Vice-Chancellor at Lagos State University, I
-                saw brilliant students from rural areas arrive late to crucial
-                exams, miss important lectures, or even consider dropping out
-                because of unreliable transportation. These experiences broke my
-                heart and fueled my passion for finding sustainable solutions.
+                Design at Uniride isn’t just about how things look—it’s about how they work, how they feel, and how they connect with you. Every icon, color, layout, and screen is part of a bigger promise: to make your ride smoother, clearer, and more intuitive every time you tap the app.
               </p>
               <p className="mb-4">
-                Uniride represents more than just a transportation service; it's
-                an enabler of dreams. Our platform ensures that a student from
-                Sokoto can pursue engineering at the University of Lagos without
-                worrying about how to get home for holidays. It guarantees that
-                a young woman from Bayelsa can attend medical school in Ibadan
-                with the confidence that safe, reliable transportation is always
-                available.
+                We’re building more than a ride platform—we’re building a brand you can trust, a space that feels familiar, and a journey that reflects you. From simplifying the way you book, to refining the smallest motion in the UI, every decision we make is guided by your experience and feedback.
               </p>
               <p className="mb-4">
-                What I'm most proud of is how we've maintained the highest
-                safety standards while keeping our services affordable. Every
-                safety protocol we've implemented comes from understanding that
-                we're not just transporting passengers – we're carrying the
-                hopes and dreams of families who have invested everything in
-                their children's education.
+                This next chapter is about clarity, accessibility, and empathy in our design. We're reimagining what the Uniride brand stands for—and you're at the center of it.
               </p>
               <p className="mb-4">
-                To our student users: your academic success is our priority. To
-                parents: your children's safety is our responsibility. To
-                university administrators: we're your partners in ensuring no
-                student's potential is limited by geography.
+                Thank you for being part of this journey. I’m excited for what’s ahead—and I can't wait to show you how we're turning bold ideas into real impact.
               </p>
               <p className="font-semibold">
-                With warm regards,
-                <br />
-                Ajala Ademide
-                <br />
-                Innovative Designer, Uniride
+                With purpose,<br />
+                Ademide Ajala<br />
+                Brand Designer<br />
+                Uniride
               </p>
             </div>
           </div>
