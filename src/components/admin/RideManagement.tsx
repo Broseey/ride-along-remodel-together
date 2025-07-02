@@ -1,5 +1,4 @@
-
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,28 +9,54 @@ import { format } from "date-fns";
 
 const RideManagement = () => {
   const { data: rides, isLoading } = useQuery({
-    queryKey: ['admin-rides'],
+    queryKey: ["admin-rides"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('rides')
-        .select(`
+        .from("rides")
+        .select(
+          `
           *,
           profiles!rides_user_id_fkey(full_name, email)
-        `)
-        .order('created_at', { ascending: false });
-      
+        `
+        )
+        .order("departure_date", { ascending: true });
+
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
+  // Group rides
+  const now = new Date();
+  const activeStatuses = ["pending", "confirmed", "available"];
+  const completedStatuses = ["completed"];
+  const cancelledStatuses = ["cancelled"];
+
+  const activeRides =
+    rides?.filter(
+      (r) =>
+        activeStatuses.includes(r.status) && new Date(r.departure_date) >= now
+    ) || [];
+  const completedRides =
+    rides?.filter((r) => completedStatuses.includes(r.status)) || [];
+  const cancelledRides =
+    rides?.filter((r) => cancelledStatuses.includes(r.status)) || [];
+  const nextRide = activeRides.length > 0 ? activeRides[0] : null;
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'secondary';
-      case 'confirmed': return 'default';
-      case 'completed': return 'outline';
-      case 'cancelled': return 'destructive';
-      default: return 'secondary';
+      case "pending":
+        return "secondary";
+      case "confirmed":
+        return "default";
+      case "completed":
+        return "outline";
+      case "cancelled":
+        return "destructive";
+      case "available":
+        return "default";
+      default:
+        return "secondary";
     }
   };
 
@@ -42,77 +67,89 @@ const RideManagement = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Real-Time Ride Management</CardTitle>
+        <CardTitle>All Rides</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {rides?.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              No rides have been booked yet. Rides will appear here when users start booking.
+        {nextRide && (
+          <div className="mb-6 p-4 border rounded-lg bg-blue-50">
+            <h3 className="font-bold mb-2">Next to Go</h3>
+            <div className="flex items-center gap-3">
+              <Badge variant={getStatusColor(nextRide.status)}>
+                {nextRide.status}
+              </Badge>
+              <span>
+                {nextRide.from_location} → {nextRide.to_location}
+              </span>
+              <span>
+                {format(new Date(nextRide.departure_date), "MMM dd, yyyy")}
+              </span>
+              <span>{nextRide.departure_time}</span>
             </div>
-          ) : (
-            rides?.map((ride) => (
-              <div key={ride.id} className="border rounded-lg p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div>
-                      <h3 className="font-medium">{ride.profiles?.full_name || 'Unknown User'}</h3>
-                      <p className="text-sm text-gray-500">{ride.profiles?.email}</p>
-                    </div>
-                    <Badge variant={getStatusColor(ride.status)}>
-                      {ride.status}
-                    </Badge>
-                  </div>
-                  <Button size="sm" variant="outline">
-                    <Eye className="h-4 w-4 mr-2" />
-                    View Details
-                  </Button>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-gray-500" />
-                    <div>
-                      <p className="font-medium">From: {ride.from_location}</p>
-                      <p className="text-gray-500">To: {ride.to_location}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <div>
-                      <p className="font-medium">{format(new Date(ride.departure_date), 'MMM dd, yyyy')}</p>
-                      <p className="text-gray-500">{ride.departure_time}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-gray-500" />
-                    <div>
-                      <p className="font-medium">{ride.seats_requested} passenger(s)</p>
-                      <p className="text-gray-500">{ride.booking_type}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-gray-500" />
-                    <div>
-                      <p className="font-medium">₦{ride.price || 'TBD'}</p>
-                      <p className="text-gray-500">Created {format(new Date(ride.created_at), 'MMM dd')}</p>
-                    </div>
-                  </div>
-                </div>
-                
-                {ride.pickup_location && (
-                  <div className="text-sm">
-                    <span className="font-medium">Pickup Location: </span>
-                    <span className="text-gray-600">{ride.pickup_location}</span>
-                  </div>
-                )}
+          </div>
+        )}
+        <h3 className="font-semibold mt-4 mb-2">Current/Active Rides</h3>
+        {activeRides.length === 0 ? (
+          <p className="text-gray-500 mb-4">No active rides.</p>
+        ) : (
+          activeRides.map((ride) => (
+            <div key={ride.id} className="border rounded-lg p-4 mb-2">
+              <div className="flex items-center gap-3">
+                <Badge variant={getStatusColor(ride.status)}>
+                  {ride.status}
+                </Badge>
+                <span>
+                  {ride.from_location} → {ride.to_location}
+                </span>
+                <span>
+                  {format(new Date(ride.departure_date), "MMM dd, yyyy")}
+                </span>
+                <span>{ride.departure_time}</span>
               </div>
-            ))
-          )}
-        </div>
+            </div>
+          ))
+        )}
+        <h3 className="font-semibold mt-6 mb-2">Completed Rides</h3>
+        {completedRides.length === 0 ? (
+          <p className="text-gray-500 mb-4">No completed rides.</p>
+        ) : (
+          completedRides.map((ride) => (
+            <div key={ride.id} className="border rounded-lg p-4 mb-2">
+              <div className="flex items-center gap-3">
+                <Badge variant={getStatusColor(ride.status)}>
+                  {ride.status}
+                </Badge>
+                <span>
+                  {ride.from_location} → {ride.to_location}
+                </span>
+                <span>
+                  {format(new Date(ride.departure_date), "MMM dd, yyyy")}
+                </span>
+                <span>{ride.departure_time}</span>
+              </div>
+            </div>
+          ))
+        )}
+        <h3 className="font-semibold mt-6 mb-2">Cancelled/Forfeited Rides</h3>
+        {cancelledRides.length === 0 ? (
+          <p className="text-gray-500 mb-4">No cancelled rides.</p>
+        ) : (
+          cancelledRides.map((ride) => (
+            <div key={ride.id} className="border rounded-lg p-4 mb-2">
+              <div className="flex items-center gap-3">
+                <Badge variant={getStatusColor(ride.status)}>
+                  {ride.status}
+                </Badge>
+                <span>
+                  {ride.from_location} → {ride.to_location}
+                </span>
+                <span>
+                  {format(new Date(ride.departure_date), "MMM dd, yyyy")}
+                </span>
+                <span>{ride.departure_time}</span>
+              </div>
+            </div>
+          ))
+        )}
       </CardContent>
     </Card>
   );

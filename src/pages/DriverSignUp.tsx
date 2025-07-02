@@ -24,6 +24,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import DriverNavbar from "@/components/navbar/DriverNavbar";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 
 const DriverSignUp = () => {
   const navigate = useNavigate();
@@ -586,107 +587,125 @@ const DriverSignUp = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <DriverNavbar />
+    <HelmetProvider>
+      <Helmet>
+        <title>Driver Sign Up | Uniride</title>
+        <meta
+          name="description"
+          content="Sign up as a driver on Uniride and start earning by offering safe, affordable rides to students and staff across Nigeria."
+        />
+        <meta property="og:title" content="Driver Sign Up | Uniride" />
+        <meta
+          property="og:description"
+          content="Sign up as a driver on Uniride and start earning by offering safe, affordable rides to students and staff across Nigeria."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://uniride.ng/driver-signup" />
+        <meta property="og:image" content="/og-cover.png" />
+      </Helmet>
 
-      <div className="container mx-auto px-4 py-8">
-        <Card className="max-w-4xl mx-auto">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center">
-              Join Uniride as a Driver
-            </CardTitle>
-            <CardDescription className="text-center">
-              Complete the registration process to start driving with us
-            </CardDescription>
+      <div className="min-h-screen bg-gray-50">
+        <DriverNavbar />
 
-            {currentStep < 5 && (
-              <div className="flex justify-center mt-6">
-                <div className="flex items-center space-x-2">
-                  {[1, 2, 3, 4].map((step) => (
-                    <div key={step} className="flex items-center">
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                          currentStep >= step
-                            ? "bg-black text-white"
-                            : "bg-gray-200"
-                        }`}
-                      >
-                        {step}
-                      </div>
-                      {step < 4 && (
-                        <div
-                          className={`w-8 h-1 ${
-                            currentStep > step ? "bg-black" : "bg-gray-200"
-                          }`}
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardHeader>
-
-          <CardContent>
-            <form onSubmit={handleSubmit}>
-              {renderStep()}
+        <div className="container mx-auto px-4 py-8">
+          <Card className="max-w-4xl mx-auto">
+            <CardHeader>
+              <CardTitle className="text-2xl text-center">
+                Join Uniride as a Driver
+              </CardTitle>
+              <CardDescription className="text-center">
+                Complete the registration process to start driving with us
+              </CardDescription>
 
               {currentStep < 5 && (
-                <div className="flex justify-between mt-8">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={prevStep}
-                    disabled={currentStep === 1}
-                  >
-                    Previous
-                  </Button>
-
-                  {currentStep < 4 ? (
-                    <Button
-                      type="button"
-                      onClick={nextStep}
-                      disabled={!validateCurrentStep()}
-                    >
-                      Next
-                    </Button>
-                  ) : (
-                    <Button
-                      type="submit"
-                      disabled={!validateCurrentStep() || isLoading}
-                    >
-                      {isLoading ? "Submitting..." : "Submit Application"}
-                    </Button>
-                  )}
+                <div className="flex justify-center mt-6">
+                  <div className="flex items-center space-x-2">
+                    {[1, 2, 3, 4].map((step) => (
+                      <div key={step} className="flex items-center">
+                        <div
+                          className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            currentStep >= step
+                              ? "bg-black text-white"
+                              : "bg-gray-200"
+                          }`}
+                        >
+                          {step}
+                        </div>
+                        {step < 4 && (
+                          <div
+                            className={`w-8 h-1 ${
+                              currentStep > step ? "bg-black" : "bg-gray-200"
+                            }`}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
-            </form>
+            </CardHeader>
 
-            {currentStep < 5 && (
-              <div className="mt-8 text-center space-y-4">
-                <p className="text-sm text-gray-600">
-                  Already have an account?{" "}
-                  <Link
-                    to="/driver-signin"
-                    className="font-medium text-black hover:underline"
-                  >
-                    Sign in
-                  </Link>
-                </p>
-                <div className="flex justify-center">
-                  <Link
-                    to="/forgot-password"
-                    className="text-sm text-gray-500 hover:underline"
-                  >
-                    Forgot your password?
-                  </Link>
+            <CardContent>
+              <form onSubmit={handleSubmit}>
+                {renderStep()}
+
+                {currentStep < 5 && (
+                  <div className="flex justify-between mt-8">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={prevStep}
+                      disabled={currentStep === 1}
+                    >
+                      Previous
+                    </Button>
+
+                    {currentStep < 4 ? (
+                      <Button
+                        type="button"
+                        onClick={nextStep}
+                        disabled={!validateCurrentStep()}
+                      >
+                        Next
+                      </Button>
+                    ) : (
+                      <Button
+                        type="submit"
+                        disabled={!validateCurrentStep() || isLoading}
+                      >
+                        {isLoading ? "Submitting..." : "Submit Application"}
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </form>
+
+              {currentStep < 5 && (
+                <div className="mt-8 text-center space-y-4">
+                  <p className="text-sm text-gray-600">
+                    Already have an account?{" "}
+                    <Link
+                      to="/driver-signin"
+                      className="font-medium text-black hover:underline"
+                    >
+                      Sign in
+                    </Link>
+                  </p>
+                  <div className="flex justify-center">
+                    <Link
+                      to="/forgot-password"
+                      className="text-sm text-gray-500 hover:underline"
+                    >
+                      Forgot your password?
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </HelmetProvider>
   );
 };
 

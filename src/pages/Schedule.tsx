@@ -17,6 +17,7 @@ import { Link } from "react-router-dom";
 import MobileNavigation from "@/components/dashboard/MobileNavigation";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 
 interface PopularRoute {
   from: string;
@@ -110,71 +111,80 @@ const Schedule = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="max-w-7xl mx-auto px-4 py-8 pb-24">
-        {" "}
-        {/* Add pb-24 for mobile nav space */}
-        <h1 className="text-3xl font-bold mb-6">Schedule a Ride</h1>
-        <div className="flex flex-col md:flex-row gap-6">
-          <div className="md:w-1/2">
-            <RideBookingFormNew navigationState={location.state} />
-          </div>
+    <HelmetProvider>
+      <Helmet>
+        <title>Schedule | Uniride</title>
+        <meta
+          name="description"
+          content="View your upcoming Uniride trips and ride schedule. Stay organized and never miss your next campus journey."
+        />
+      </Helmet>
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="max-w-7xl mx-auto px-4 py-8 pb-24">
+          {" "}
+          {/* Add pb-24 for mobile nav space */}
+          <h1 className="text-3xl font-bold mb-6">Schedule a Ride</h1>
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="md:w-1/2">
+              <RideBookingFormNew navigationState={location.state} />
+            </div>
 
-          <div className="md:w-1/2">
-            <Card className="hover:shadow-lg transition-all duration-300">
-              <CardHeader>
-                <CardTitle>Popular Routes</CardTitle>
-                <CardDescription>Frequently traveled routes</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {loadingPopular ? (
-                    <div className="text-center text-gray-400">Loading...</div>
-                  ) : popularRoutes.length === 0 ? (
-                    <div className="text-center text-gray-400">
-                      No popular routes found.
-                    </div>
-                  ) : (
-                    popularRoutes.map((route, index) => (
-                      <div
-                        key={index}
-                        className="flex justify-between items-center p-4 border rounded-md hover:bg-gray-50 cursor-pointer transition-all duration-200 hover:shadow-md"
-                      >
-                        <div className="flex items-start">
-                          <MapPin className="h-5 w-5 mr-3 mt-1 text-gray-500" />
-                          <div>
-                            <p className="font-medium">
-                              {route.from} → {route.to}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              Starting from {route.price}
-                            </p>
-                          </div>
-                        </div>
-                        <Link to="/signin">
-                          <Button
-                            size="sm"
-                            className="bg-black text-white hover:bg-neutral-800 transform active:scale-95 transition-transform duration-200"
-                          >
-                            Book Now
-                          </Button>
-                        </Link>
+            <div className="md:w-1/2">
+              <Card className="hover:shadow-lg transition-all duration-300">
+                <CardHeader>
+                  <CardTitle>Popular Routes</CardTitle>
+                  <CardDescription>Frequently traveled routes</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {loadingPopular ? (
+                      <div className="text-center text-gray-400">Loading...</div>
+                    ) : popularRoutes.length === 0 ? (
+                      <div className="text-center text-gray-400">
+                        No popular routes found.
                       </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                    ) : (
+                      popularRoutes.map((route, index) => (
+                        <div
+                          key={index}
+                          className="flex justify-between items-center p-4 border rounded-md hover:bg-gray-50 cursor-pointer transition-all duration-200 hover:shadow-md"
+                        >
+                          <div className="flex items-start">
+                            <MapPin className="h-5 w-5 mr-3 mt-1 text-gray-500" />
+                            <div>
+                              <p className="font-medium">
+                                {route.from} → {route.to}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                Starting from {route.price}
+                              </p>
+                            </div>
+                          </div>
+                          <Link to="/signin">
+                            <Button
+                              size="sm"
+                              className="bg-black text-white hover:bg-neutral-800 transform active:scale-95 transition-transform duration-200"
+                            >
+                              Book Now
+                            </Button>
+                          </Link>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
+        {isMobile && (
+          <div className="fixed bottom-0 left-0 right-0 z-50">
+            <MobileNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+          </div>
+        )}
       </div>
-      {isMobile && (
-        <div className="fixed bottom-0 left-0 right-0 z-50">
-          <MobileNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
-        </div>
-      )}
-    </div>
+    </HelmetProvider>
   );
 };
 

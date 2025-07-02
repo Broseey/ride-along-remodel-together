@@ -10,9 +10,9 @@ const Admin = () => {
   useEffect(() => {
     // Redirect all admin OAuth callbacks to /callback for unified handling
     if (window.location.hash.includes("access_token")) {
-      navigate('/callback', { replace: true });
+      navigate("/callback", { replace: true });
     } else {
-      navigate('/admin-dashboard', { replace: true });
+      navigate("/admin-dashboard", { replace: true });
     }
   }, [navigate]);
 

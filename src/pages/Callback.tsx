@@ -9,7 +9,11 @@ const Callback = () => {
   useEffect(() => {
     if (window.location.hash.includes("access_token")) {
       supabase.auth.exchangeCodeForSession(window.location.hash).then(() => {
-        window.history.replaceState({}, document.title, location.pathname + location.search);
+        window.history.replaceState(
+          {},
+          document.title,
+          location.pathname + location.search
+        );
         // Redirect to dashboard or admin-dashboard as needed
         navigate("/dashboard", { replace: true });
       });

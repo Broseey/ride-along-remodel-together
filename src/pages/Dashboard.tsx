@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { CalendarPlus, Clock, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("home");
@@ -120,111 +121,131 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Navbar />
+    <HelmetProvider>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Helmet>
+          <title>Dashboard | Uniride</title>
+          <meta
+            name="description"
+            content="Your Uniride dashboard: manage your rides, bookings, and profile. Safe, affordable, and reliable travel for students across Nigeria."
+          />
+          <meta property="og:title" content="Dashboard | Uniride" />
+          <meta
+            property="og:description"
+            content="Your Uniride dashboard: manage your rides, bookings, and profile. Safe, affordable, and reliable travel for students across Nigeria."
+          />
+          <meta property="og:type" content="website" />
+          <meta property="og:url" content="https://uniride.ng/dashboard" />
+          <meta property="og:image" content="/og-cover.png" />
+        </Helmet>
 
-      <div className="flex-1 px-4 py-6 md:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-        <WelcomeHeader name={userName} />
+        <Navbar />
 
-        {/* Trip Status Overview - Simplified */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Rides</CardTitle>
-              <MapPin className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{rides?.length || 0}</div>
-              <p className="text-xs text-muted-foreground">All time</p>
-            </CardContent>
-          </Card>
+        <div className="flex-1 px-4 py-6 md:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+          <WelcomeHeader name={userName} />
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Upcoming Rides
-              </CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{upcomingRides.length}</div>
-              <p className="text-xs text-muted-foreground">Scheduled</p>
-            </CardContent>
-          </Card>
+          {/* Trip Status Overview - Simplified */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Total Rides
+                </CardTitle>
+                <MapPin className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{rides?.length || 0}</div>
+                <p className="text-xs text-muted-foreground">All time</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Upcoming Rides
+                </CardTitle>
+                <Clock className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{upcomingRides.length}</div>
+                <p className="text-xs text-muted-foreground">Scheduled</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left column - Main actions and upcoming ride */}
+            <div className="lg:col-span-2 space-y-6">
+              <QuickActions />
+
+              {/* Upcoming Ride or No Rides Message */}
+              {nextUpcomingRide ? (
+                <UpcomingRide ride={nextUpcomingRide} />
+              ) : (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">No Upcoming Rides</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-center py-8">
+                    <p className="text-gray-600 mb-6">
+                      You don't have any upcoming rides scheduled.
+                    </p>
+                    <Link to="/schedule">
+                      <Button className="bg-black text-white hover:bg-neutral-800">
+                        <CalendarPlus className="mr-2 h-4 w-4" />
+                        Schedule a Ride
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              )}
+
+              <QuickRoutes routes={quickRoutes} />
+            </div>
+
+            {/* Right column - Account and recent activity */}
+            <div className="space-y-6">
+              <AccountLinks />
+
+              {/* Recent Rides or No Rides Message */}
+              {recentRides.length > 0 ? (
+                <RecentRides rides={recentRides.slice(0, 3)} />
+              ) : (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Recent Rides</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-center py-6">
+                    <p className="text-gray-600 text-sm">
+                      No ride history yet. Book your first ride to get started!
+                    </p>
+                    <Link to="/">
+                      <Button className="mt-4 bg-black text-white hover:bg-neutral-800">
+                        Book a Ride
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              )}
+
+              <RealTimeStatus />
+            </div>
+          </div>
+
+          {/* Mobile Bottom Navigation - Make it functional */}
+          {isMobile && (
+            <div className="fixed bottom-0 left-0 right-0 z-50">
+              <MobileNavigation
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+              />
+            </div>
+          )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column - Main actions and upcoming ride */}
-          <div className="lg:col-span-2 space-y-6">
-            <QuickActions />
-
-            {/* Upcoming Ride or No Rides Message */}
-            {nextUpcomingRide ? (
-              <UpcomingRide ride={nextUpcomingRide} />
-            ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">No Upcoming Rides</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center py-8">
-                  <p className="text-gray-600 mb-6">
-                    You don't have any upcoming rides scheduled.
-                  </p>
-                  <Link to="/schedule">
-                    <Button className="bg-black text-white hover:bg-neutral-800">
-                      <CalendarPlus className="mr-2 h-4 w-4" />
-                      Schedule a Ride
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            )}
-
-            <QuickRoutes routes={quickRoutes} />
-          </div>
-
-          {/* Right column - Account and recent activity */}
-          <div className="space-y-6">
-            <AccountLinks />
-
-            {/* Recent Rides or No Rides Message */}
-            {recentRides.length > 0 ? (
-              <RecentRides rides={recentRides.slice(0, 3)} />
-            ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Recent Rides</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center py-6">
-                  <p className="text-gray-600 text-sm">
-                    No ride history yet. Book your first ride to get started!
-                  </p>
-                  <Link to="/">
-                    <Button className="mt-4 bg-black text-white hover:bg-neutral-800">
-                      Book a Ride
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            )}
-
-            <RealTimeStatus />
-          </div>
-        </div>
-
-        {/* Mobile Bottom Navigation - Make it functional */}
-        {isMobile && (
-          <div className="fixed bottom-0 left-0 right-0 z-50">
-            <MobileNavigation
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-            />
-          </div>
-        )}
+        <Footer isMobile={isMobile} />
       </div>
-
-      <Footer isMobile={isMobile} />
-    </div>
+    </HelmetProvider>
   );
 };
 

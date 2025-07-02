@@ -1,35 +1,61 @@
-
 import React from "react";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 
-const TermsAndConditions = () => {
-  return (
+const TermsAndConditions = () => (
+  <HelmetProvider>
     <div className="min-h-screen bg-gray-50">
+      <Helmet>
+        <title>Terms and Conditions | Uniride</title>
+        <meta
+          name="description"
+          content="Read the terms and conditions for using Uniride. Learn about your rights, responsibilities, and our policies for safe, affordable rides."
+        />
+        <meta property="og:title" content="Terms and Conditions | Uniride" />
+        <meta
+          property="og:description"
+          content="Read the terms and conditions for using Uniride. Learn about your rights, responsibilities, and our policies for safe, affordable rides."
+        />
+        <meta property="og:type" content="website" />
+        <meta
+          property="og:url"
+          content="https://uniride.ng/terms-and-conditions"
+        />
+        <meta property="og:image" content="/og-cover.png" />
+      </Helmet>
+
       <Navbar />
-      
+
       <div className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold mb-8">Terms and Conditions</h1>
         <p className="text-gray-600 mb-8">Last updated: June 2, 2025</p>
-        
+
         <div className="bg-white rounded-lg shadow-sm p-8 space-y-8">
           <section>
-            <h2 className="text-2xl font-semibold mb-4">1. Acceptance of Terms</h2>
+            <h2 className="text-2xl font-semibold mb-4">
+              1. Acceptance of Terms
+            </h2>
             <p className="text-gray-700 leading-relaxed">
-              By accessing and using Uniride's services, you accept and agree to be bound by the terms 
-              and provision of this agreement. If you do not agree to abide by the above, please do not 
-              use this service.
+              By accessing and using Uniride's services, you accept and agree to
+              be bound by the terms and provision of this agreement. If you do
+              not agree to abide by the above, please do not use this service.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">2. Service Description</h2>
+            <h2 className="text-2xl font-semibold mb-4">
+              2. Service Description
+            </h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              Uniride is a technology platform that connects university students with drivers for 
-              transportation services. We do not provide transportation services directly but facilitate 
-              connections between users.
+              Uniride is a technology platform that connects university students
+              with drivers for transportation services. We do not provide
+              transportation services directly but facilitate connections
+              between users.
             </p>
             <ul className="list-disc pl-6 text-gray-700 space-y-2">
-              <li>Ride-sharing coordination between students and verified drivers</li>
+              <li>
+                Ride-sharing coordination between students and verified drivers
+              </li>
               <li>Route planning and scheduling tools</li>
               <li>Payment processing and booking management</li>
               <li>Safety features and driver verification</li>
@@ -50,7 +76,9 @@ const TermsAndConditions = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">4. User Responsibilities</h2>
+            <h2 className="text-2xl font-semibold mb-4">
+              4. User Responsibilities
+            </h2>
             <div className="space-y-4">
               <div>
                 <h3 className="text-lg font-medium mb-2">For Riders:</h3>
@@ -74,10 +102,15 @@ const TermsAndConditions = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">5. Booking and Cancellation Policy</h2>
+            <h2 className="text-2xl font-semibold mb-4">
+              5. Booking and Cancellation Policy
+            </h2>
             <ul className="list-disc pl-6 text-gray-700 space-y-2">
               <li>Bookings are confirmed upon payment and driver acceptance</li>
-              <li>Cancellations must be made at least 2 hours before scheduled departure</li>
+              <li>
+                Cancellations must be made at least 2 hours before scheduled
+                departure
+              </li>
               <li>Late cancellations may result in partial or no refund</li>
               <li>No-shows may result in full fare charge</li>
             </ul>
@@ -86,61 +119,79 @@ const TermsAndConditions = () => {
           <section>
             <h2 className="text-2xl font-semibold mb-4">6. Payment Terms</h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              All payments are processed securely through our platform. By using our services, you agree to:
+              All payments are processed securely through our platform. By using
+              our services, you agree to:
             </p>
             <ul className="list-disc pl-6 text-gray-700 space-y-2">
               <li>Pay all applicable fares and fees</li>
               <li>Provide accurate payment information</li>
               <li>Accept our refund and dispute resolution policies</li>
-              <li>Authorize automatic payment processing for confirmed bookings</li>
+              <li>
+                Authorize automatic payment processing for confirmed bookings
+              </li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">7. Safety and Liability</h2>
+            <h2 className="text-2xl font-semibold mb-4">
+              7. Safety and Liability
+            </h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              While we implement safety measures, users participate at their own risk. Uniride:
+              While we implement safety measures, users participate at their own
+              risk. Uniride:
             </p>
             <ul className="list-disc pl-6 text-gray-700 space-y-2">
               <li>Conducts basic background checks on drivers</li>
               <li>Provides emergency contact features</li>
-              <li>Is not liable for accidents, injuries, or damages during rides</li>
+              <li>
+                Is not liable for accidents, injuries, or damages during rides
+              </li>
               <li>Recommends users maintain personal insurance coverage</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">8. Prohibited Conduct</h2>
+            <h2 className="text-2xl font-semibold mb-4">
+              8. Prohibited Conduct
+            </h2>
             <p className="text-gray-700 leading-relaxed mb-4">Users may not:</p>
             <ul className="list-disc pl-6 text-gray-700 space-y-2">
               <li>Use the platform for illegal activities</li>
               <li>Harass, threaten, or discriminate against other users</li>
               <li>Provide false information or impersonate others</li>
               <li>Attempt to circumvent security measures</li>
-              <li>Use the service for commercial purposes without authorization</li>
+              <li>
+                Use the service for commercial purposes without authorization
+              </li>
             </ul>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-4">9. Termination</h2>
             <p className="text-gray-700 leading-relaxed">
-              We reserve the right to suspend or terminate accounts for violations of these terms, 
-              suspicious activity, or at our discretion. Users may also terminate their accounts 
-              at any time through the platform settings.
+              We reserve the right to suspend or terminate accounts for
+              violations of these terms, suspicious activity, or at our
+              discretion. Users may also terminate their accounts at any time
+              through the platform settings.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">10. Changes to Terms</h2>
+            <h2 className="text-2xl font-semibold mb-4">
+              10. Changes to Terms
+            </h2>
             <p className="text-gray-700 leading-relaxed">
-              We may update these terms periodically. Continued use of the service after changes 
-              constitutes acceptance of the new terms. We will notify users of significant changes 
-              via email or platform notifications.
+              We may update these terms periodically. Continued use of the
+              service after changes constitutes acceptance of the new terms. We
+              will notify users of significant changes via email or platform
+              notifications.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">11. Contact Information</h2>
+            <h2 className="text-2xl font-semibold mb-4">
+              11. Contact Information
+            </h2>
             <p className="text-gray-700 leading-relaxed">
               For questions about these terms, please contact us at:
               <br />
@@ -154,7 +205,7 @@ const TermsAndConditions = () => {
         </div>
       </div>
     </div>
-  );
-};
+  </HelmetProvider>
+);
 
 export default TermsAndConditions;

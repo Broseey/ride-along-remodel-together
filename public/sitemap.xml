@@ -1,39 +1,52 @@
-  <?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://www.uniride.ng/</loc>
+    <loc>https://uniride.ng/</loc>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://www.uniride.ng/about</loc>
+    <loc>https://uniride.ng/about</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.uniride.ng/how-it-works</loc>
+    <loc>https://uniride.ng/how-it-works</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.uniride.ng/available</loc>
+    <loc>https://uniride.ng/help</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.uniride.ng/drive</loc>
+    <loc>https://uniride.ng/drive</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.uniride.ng/partner</loc>
+    <loc>https://uniride.ng/available</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://uniride.ng/partner</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://uniride.ng/join-as-company</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://uniride.ng/terms-and-conditions</loc>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.uniride.ng/help</loc>
+    <loc>https://uniride.ng/privacy-policy</loc>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.uniride.ng/terms</loc>
-    <priority>0.5</priority>
+    <loc>https://uniride.ng/signup</loc>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.uniride.ng/privacy</loc>
-    <priority>0.5</priority>
+    <loc>https://uniride.ng/signin</loc>
+    <priority>0.7</priority>
   </url>
+  <!-- Add more URLs as needed -->
 </urlset>

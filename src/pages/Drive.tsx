@@ -15,15 +15,35 @@ import {
 import { Link } from "react-router-dom";
 import DriverNavbar from "@/components/navbar/DriverNavbar";
 import Footer from "@/components/Footer";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 // Import images at the top
-import driveHeroImg from "@/assets/images/drive.gif";
-import requirementsImg from "@/assets/images/environment.jpg";
-import step1Img from "@/assets/images/checkingcomputer.jpg";
-import step2Img from "@/assets/images/happyjump.jpg";
-import step3Img from "@/assets/images/moneycovers.jpg";
-const Drive = () => {
-  return (
-    <div className="min-h-screen bg-gray-50">
+import driveHeroImgWebp from "@/assets/images/drive.webp";
+import requirementsImgWebp from "@/assets/images/optimized/environment.webp";
+import requirementsImgJpg from "@/assets/images/optimized/environment.jpg";
+import step1ImgWebp from "@/assets/images/optimized/checkingcomputer.webp";
+import step1ImgJpg from "@/assets/images/optimized/checkingcomputer.jpg";
+import step2ImgWebp from "@/assets/images/optimized/happyjump.webp";
+import step2ImgJpg from "@/assets/images/optimized/happyjump.jpg";
+import step3ImgWebp from "@/assets/images/optimized/moneycovers.webp";
+import step3ImgJpg from "@/assets/images/optimized/moneycovers.jpg";
+const Drive = () => (
+  <HelmetProvider>
+    <>
+      <Helmet>
+        <title>Drive with Uniride | Become a Campus Driver</title>
+        <meta
+          name="description"
+          content="Drive with Uniride and earn by offering safe, affordable rides to students and staff. Join our trusted community of campus drivers."
+        />
+        <meta property="og:title" content="Drive with Uniride" />
+        <meta
+          property="og:description"
+          content="Drive with Uniride and earn by offering safe, affordable rides to students and staff."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://uniride.ng/drive" />
+        <meta property="og:image" content="/og-cover.png" />
+      </Helmet>
       <DriverNavbar />
 
       {/* Hero Section */}
@@ -57,7 +77,7 @@ const Drive = () => {
             <div className="flex justify-center">
               <div className="w-full h-80 bg-gray-800 rounded-lg flex items-center justify-center relative overflow-hidden">
                 <img
-                  src={driveHeroImg}
+                  src={driveHeroImgWebp}
                   alt="Drive Hero"
                   className="absolute inset-0 w-full h-full object-cover opacity-60 rounded-lg"
                 />
@@ -161,11 +181,14 @@ const Drive = () => {
             </div>
             <div className="flex justify-center">
               <div className="w-full h-80 bg-gray-100 rounded-lg flex items-center justify-center relative overflow-hidden">
-                <img
-                  src={requirementsImg}
-                  alt="Requirements"
-                  className="absolute inset-0 w-full h-full object-cover rounded-lg"
-                />
+                <picture>
+                  <source srcSet={requirementsImgWebp} type="image/webp" />
+                  <img
+                    src={requirementsImgJpg}
+                    alt="Requirements"
+                    className="absolute inset-0 w-full h-full object-cover rounded-lg"
+                  />
+                </picture>
                 <div className="absolute inset-0 bg-black/50 rounded-lg" />
               </div>
             </div>
@@ -186,11 +209,14 @@ const Drive = () => {
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="w-full h-48 bg-gray-200 rounded-lg mb-6 flex items-center justify-center relative overflow-hidden">
-                <img
-                  src={step1Img}
-                  alt="Step 1"
-                  className="absolute inset-0 w-full h-full object-cover object-top rounded-lg"
-                />
+                <picture>
+                  <source srcSet={step1ImgWebp} type="image/webp" />
+                  <img
+                    src={step1ImgJpg}
+                    alt="Step 1"
+                    className="absolute inset-0 w-full h-full object-cover object-top rounded-lg"
+                  />
+                </picture>
                 <div className="absolute inset-0 bg-black/50 rounded-lg" />
                 <div className="relative z-10 flex items-center justify-center w-full h-full">
                   <Users className="h-16 w-16 text-white" />
@@ -206,11 +232,14 @@ const Drive = () => {
 
             <div className="text-center">
               <div className="w-full h-48 bg-gray-200 rounded-lg mb-6 flex items-center justify-center relative overflow-hidden">
-                <img
-                  src={step2Img}
-                  alt="Step 2"
-                  className="absolute inset-0 w-full h-full object-cover rounded-lg"
-                />
+                <picture>
+                  <source srcSet={step2ImgWebp} type="image/webp" />
+                  <img
+                    src={step2ImgJpg}
+                    alt="Step 2"
+                    className="absolute inset-0 w-full h-full object-cover rounded-lg"
+                  />
+                </picture>
                 <div className="absolute inset-0 bg-black/50 rounded-lg" />
                 <div className="relative z-10 flex items-center justify-center w-full h-full">
                   <Shield className="h-16 w-16 text-white" />
@@ -226,11 +255,14 @@ const Drive = () => {
 
             <div className="text-center">
               <div className="w-full h-48 bg-gray-200 rounded-lg mb-6 flex items-center justify-center relative overflow-hidden">
-                <img
-                  src={step3Img}
-                  alt="Step 3"
-                  className="absolute inset-0 w-full h-full object-cover  rounded-lg"
-                />
+                <picture>
+                  <source srcSet={step3ImgWebp} type="image/webp" />
+                  <img
+                    src={step3ImgJpg}
+                    alt="Step 3"
+                    className="absolute inset-0 w-full h-full object-cover  rounded-lg"
+                  />
+                </picture>
                 <div className="absolute inset-0 bg-black/50 rounded-lg" />
                 <div className="relative z-10 flex items-center justify-center w-full h-full">
                   <Car className="h-16 w-16 text-white" />
@@ -280,7 +312,7 @@ const Drive = () => {
 
       {/* Footer placeholder */}
       <Footer />
-    </div>
-  );
-};
+    </>
+  </HelmetProvider>
+);
 export default Drive;

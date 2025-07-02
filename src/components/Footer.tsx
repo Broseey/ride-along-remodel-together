@@ -46,11 +46,11 @@ const Footer = () => {
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  shape-rendering="geometricPrecision"
-                  text-rendering="geometricPrecision"
-                  image-rendering="optimizeQuality"
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
+                  shapeRendering="geometricPrecision"
+                  textRendering="geometricPrecision"
+                  imageRendering="optimizeQuality"
+                  fillRule="evenodd"
+                  clipRule="evenodd"
                   viewBox="0 0 510 512.459"
                   width="1.2em"
                   height="1.2em"
@@ -208,10 +208,13 @@ const Footer = () => {
             >
               Privacy Policy
             </Link>
-            <span className="text-gray-400">
+            <span className="text-gray-400 text-xs hidden sm:block ml-4">
               Made with <span className="text-red-500">❤️</span> in Nigeria
             </span>
           </div>
+          <span className="text-gray-400 text-xs block sm:hidden mt-6 px-2">
+            Made with <span className="text-red-500">❤️</span> in Nigeria
+          </span>
         </div>
       </div>
     </footer>
