@@ -21,11 +21,13 @@ const Footer = () => {
               </p>
             </div>
             <div className="flex flex-row gap-8 mt-2 items-start">
-              {/* Social icons: Instagram, WhatsApp, TikTok, LinkedIn (student-focused) */}
+              {/* Social icons: Instagram, Twitter, LinkedIn, Snapchat */}
               <a
-                href="#"
+                href="https://www.instagram.com/uniride_ng/"
                 className="w-10 h-10 rounded-lg flex items-center justify-center transition-colors duration-200 hover:bg-gradient-to-tr hover:from-pink-500 hover:to-yellow-400 hover:scale-110 group"
                 aria-label="Instagram"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <svg
                   className="w-5 h-5 text-gray-300 group-hover:text-white transition-colors duration-200"
@@ -40,31 +42,11 @@ const Footer = () => {
                 </svg>
               </a>
               <a
-                href="#"
+                href="https://twitter.com/uniride_ng"
                 className="w-10 h-10 rounded-lg flex items-center justify-center transition-colors duration-200 hover:bg-neutral-700 hover:scale-110 group"
-                aria-label="WhatsApp"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  shapeRendering="geometricPrecision"
-                  textRendering="geometricPrecision"
-                  imageRendering="optimizeQuality"
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  viewBox="0 0 510 512.459"
-                  width="1.2em"
-                  height="1.2em"
-                >
-                  <path
-                    fill="#ffffff"
-                    d="M435.689 74.468C387.754 26.471 324 .025 256.071 0 116.098 0 2.18 113.906 2.131 253.916c-.024 44.758 11.677 88.445 33.898 126.946L0 512.459l134.617-35.311c37.087 20.238 78.85 30.891 121.345 30.903h.109c139.949 0 253.88-113.917 253.928-253.928.024-67.855-26.361-131.645-74.31-179.643v-.012zm-179.618 390.7h-.085c-37.868-.011-75.016-10.192-107.428-29.417l-7.707-4.577-79.886 20.953 21.32-77.889-5.017-7.987c-21.125-33.605-32.29-72.447-32.266-112.322.049-116.366 94.729-211.046 211.155-211.046 56.373.025 109.364 22.003 149.214 61.903 39.853 39.888 61.781 92.927 61.757 149.313-.05 116.377-94.728 211.058-211.057 211.058v.011zm115.768-158.067c-6.344-3.178-37.537-18.52-43.358-20.639-5.82-2.119-10.044-3.177-14.27 3.178-4.225 6.357-16.388 20.651-20.09 24.875-3.702 4.238-7.403 4.762-13.747 1.583-6.343-3.178-26.787-9.874-51.029-31.487-18.86-16.827-31.597-37.598-35.297-43.955-3.702-6.355-.39-9.789 2.775-12.943 2.849-2.848 6.344-7.414 9.522-11.116s4.225-6.355 6.343-10.581c2.12-4.238 1.06-7.937-.522-11.117-1.584-3.177-14.271-34.409-19.568-47.108-5.151-12.37-10.385-10.69-14.269-10.897-3.703-.183-7.927-.219-12.164-.219s-11.105 1.582-16.925 7.939c-5.82 6.354-22.209 21.709-22.209 52.927 0 31.22 22.733 61.405 25.911 65.642 3.177 4.237 44.745 68.318 108.389 95.812 15.135 6.538 26.957 10.446 36.175 13.368 15.196 4.834 29.027 4.153 39.96 2.52 12.19-1.825 37.54-15.353 42.824-30.172 5.283-14.818 5.283-27.529 3.701-30.172-1.582-2.641-5.819-4.237-12.163-7.414l.011-.024z"
-                  />
-                </svg>
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 rounded-lg flex items-center justify-center transition-colors duration-200 hover:bg-neutral-700 hover:scale-110 group"
-                aria-label="TikTok"
+                aria-label="Twitter"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none">
                   <title>twitter</title>
@@ -75,16 +57,44 @@ const Footer = () => {
                 </svg>
               </a>
               <a
-                href="#"
-                className="w-10 h-10 rounded-lg flex items-center justify-center transition-colors duration-200 hover:bg-neutral-700 hover:scale-110 group"
+                href="https://linkedin.com/company/uniride-ng/"
+                className="w-10 h-10 rounded-lg flex items-center justify-center transition-colors duration-200 hover:bg-blue-700 hover:scale-110 group"
                 aria-label="LinkedIn"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <svg
-                  className="w-5 h-5 text-gray-300 group-hover:text-white transition-colors duration-200"
+                  className="w-5 h-5 group-hover:text-white transition-colors duration-200"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
+                  <title>LinkedIn</title>
                   <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.761 0 5-2.239 5-5v-14c0-2.761-2.239-5-5-5zm-11 19h-3v-10h3v10zm-1.5-11.268c-.966 0-1.75-.784-1.75-1.75s.784-1.75 1.75-1.75 1.75.784 1.75 1.75-.784 1.75-1.75 1.75zm13.5 11.268h-3v-5.604c0-1.337-.025-3.063-1.868-3.063-1.868 0-2.154 1.459-2.154 2.968v5.699h-3v-10h2.881v1.367h.041c.401-.761 1.381-1.563 2.841-1.563 3.039 0 3.6 2.001 3.6 4.601v5.595z" />
+                </svg>
+              </a>
+              <a
+                href="https://snapchat.com/t/R8dY1Z"
+                className="w-10 h-10 rounded-lg flex items-center justify-center transition-colors duration-200 hover:bg-yellow-400 hover:scale-110 group"
+                aria-label="Snapchat"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="1.7em"
+                  height="1.7em"
+                  viewBox="0 0 48 48"
+                  fill="none"
+                >
+                  <title>Snapchat</title>
+                  <path
+                    d="M24.0116,42.2697c3.8272-.0024,4.9669-1.6066,7.486-2.7237,2.2497-.9976,5.4694.5087,6.1373-2.1616h0c.0865-1.3801,2.513-1.1579,3.8742-2.0996,1.2418-.8591,1.3659-2.2361.0902-2.778-2.8877-1.2269-5.9232-3.9144-6.6578-6.7964-.4582-1.7978,5.2788-2.3506,4.0841-5.7402-.7049-2.0001-3.2379-1.2958-4.616-.8478.9182-7.1086-2.542-13.3923-10.4098-13.3923s-11.328,6.2837-10.4098,13.3923c-1.378-.448-3.911-1.1523-4.616.8478-1.1947,3.3896,4.5424,3.9424,4.0841,5.7402-.7346,2.882-3.77,5.5695-6.6578,6.7964-1.2757.542-1.1516,1.9189.0902,2.778,1.3612.9417,3.7878.7195,3.8742,2.0996h0c.6679,2.6703,3.8876,1.164,6.1373,2.1616,2.5191,1.1171,3.6588,2.7213,7.486,2.7237.0058,0,.0173,0,.0231,0Z"
+                    stroke="black"
+                    strokeWidth="2"
+                    fill="white"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </a>
             </div>

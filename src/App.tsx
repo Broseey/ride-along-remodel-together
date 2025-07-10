@@ -26,6 +26,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Available from "./pages/Available";
 import Partner from "./pages/Partner";
 import JoinAsCompany from "./pages/JoinAsCompany";
+import Blog from "./pages/blog";
+import SinglePost from "./pages/blog/slug";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import DriverRoute from "./components/auth/DriverRoute";
@@ -58,6 +60,8 @@ function App() {
               <Route path="/join-as-company" element={<JoinAsCompany />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<SinglePost />} />
 
               {/* Driver routes */}
               <Route path="/drive" element={<Drive />} />
