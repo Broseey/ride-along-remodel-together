@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider } from "@shared/contexts/AuthContext";
 import Index from "./pages/Index";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
@@ -17,9 +17,6 @@ import DriverDashboard from "./pages/DriverDashboard";
 import DriverEarnings from "./pages/DriverEarnings";
 import DriverHelp from "./pages/DriverHelp";
 import DriverRequirements from "./pages/DriverRequirements";
-import AdminSignIn from "./pages/AdminSignIn";
-import AdminDashboard from "./pages/AdminDashboard";
-import Admin from "./pages/Admin";
 import BookingConfirmation from "./pages/BookingConfirmation";
 import About from "./pages/About";
 import HowItWorks from "./pages/HowItWorks";
@@ -32,9 +29,9 @@ import JoinAsCompany from "./pages/JoinAsCompany";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import DriverRoute from "./components/auth/DriverRoute";
-import AdminRoute from "./components/auth/AdminRoute";
 import ScrollToTop from "@/components/ScrollToTop";
-import AdminQuickRoutesPage from "./pages/AdminQuickRoutes";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +56,8 @@ function App() {
               <Route path="/available" element={<Available />} />
               <Route path="/partner" element={<Partner />} />
               <Route path="/join-as-company" element={<JoinAsCompany />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
               {/* Driver routes */}
               <Route path="/drive" element={<Drive />} />
@@ -68,10 +67,6 @@ function App() {
                 path="/driver-requirements"
                 element={<DriverRequirements />}
               />
-
-              {/* Admin routes */}
-              <Route path="/admin-signin" element={<AdminSignIn />} />
-              <Route path="/admin" element={<Admin />} />
 
               {/* Protected user routes */}
               <Route
@@ -138,24 +133,6 @@ function App() {
                   <DriverRoute>
                     <DriverHelp />
                   </DriverRoute>
-                }
-              />
-
-              {/* Protected admin routes */}
-              <Route
-                path="/admin-dashboard"
-                element={
-                  <AdminRoute>
-                    <AdminDashboard />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/admin-dashboard/quick-routes"
-                element={
-                  <AdminRoute>
-                    <AdminQuickRoutesPage />
-                  </AdminRoute>
                 }
               />
 

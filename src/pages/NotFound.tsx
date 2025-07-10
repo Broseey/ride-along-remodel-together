@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, ArrowLeft, Search } from "lucide-react";
 import { Helmet, HelmetProvider } from "react-helmet-async";
+import Footer from "@/components/Footer"; // Import the Footer component
 
 const NotFound = () => {
   const location = useLocation();
@@ -119,11 +120,8 @@ const NotFound = () => {
             </div>
           </div>
 
-          <footer className="bg-gray-900 text-white py-6">
-            <div className="max-w-7xl mx-auto px-4 text-center text-gray-400">
-              <p>© 2024 Uniride. All rights reserved.</p>
-            </div>
-          </footer>
+          {/* Use the main Footer component for consistency */}
+          <Footer />
         </div>
       </>
     </HelmetProvider>

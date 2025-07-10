@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { 
@@ -6,7 +5,7 @@ import {
   CardHeader, 
   CardTitle, 
   CardContent 
-} from "@/components/ui/card";
+} from "@shared/components/ui/card";
 import { CreditCard, User, MapPin, ChevronRight, Settings, HelpCircle } from "lucide-react";
 
 const AccountLinks = () => {
@@ -35,13 +34,15 @@ const AccountLinks = () => {
               <ChevronRight className="h-5 w-5 text-gray-400" />
             </div>
           </Link>
-          <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors cursor-pointer">
-            <div className="flex items-center">
-              <User className="h-5 w-5 mr-3 text-gray-500" />
-              <p className="text-sm font-medium">Profile Settings</p>
+          <Link to="/profile">
+            <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors cursor-pointer">
+              <div className="flex items-center">
+                <User className="h-5 w-5 mr-3 text-gray-500" />
+                <p className="text-sm font-medium">Profile Settings</p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-gray-400" />
             </div>
-            <ChevronRight className="h-5 w-5 text-gray-400" />
-          </div>
+          </Link>
           <Link to="/help">
             <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
               <div className="flex items-center">

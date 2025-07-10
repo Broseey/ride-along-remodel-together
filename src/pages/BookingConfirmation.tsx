@@ -5,7 +5,7 @@ import { Helmet, HelmetProvider } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import BookingDetails from "@/components/BookingDetails";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card } from "@shared/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ChevronLeft, CheckCircle2 } from "lucide-react";
 

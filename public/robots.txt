@@ -1,8 +1,5 @@
 # robots.txt for uniride.ng
 User-agent: *
-Disallow: /admin
-Disallow: /admindashboard
-Disallow: /admin-dashboard
 Allow: /
 
 Sitemap: https://www.uniride.ng/sitemap.xml

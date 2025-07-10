@@ -19,11 +19,9 @@ export default async function handler(req, res) {
   if (!process.env.SMTP_USER) missingEnv.push("SMTP_USER");
   if (!process.env.SMTP_PASS) missingEnv.push("SMTP_PASS");
   if (missingEnv.length > 0) {
-    return res
-      .status(500)
-      .json({
-        error: `Missing SMTP environment variables: ${missingEnv.join(", ")}`,
-      });
+    return res.status(500).json({
+      error: `Missing SMTP environment variables: ${missingEnv.join(", ")}`,
+    });
   }
 
   // Configure SMTP transport using environment variables
@@ -47,6 +45,9 @@ export default async function handler(req, res) {
       cc,
       bcc,
       attachments,
+      headers: {
+        "List-Unsubscribe": `<mailto:${process.env.SMTP_FROM}?subject=unsubscribe>`,
+      },
     });
     console.log(`Email sent to ${to} with subject '${subject}'`);
     res.status(200).json({ success: true });

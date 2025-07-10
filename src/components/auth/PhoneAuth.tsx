@@ -1,10 +1,9 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Phone, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@shared/integrations/supabase/client";
 
 interface PhoneAuthProps {
   onSuccess?: () => void;
@@ -35,7 +34,9 @@ const PhoneAuth = ({ onSuccess }: PhoneAuthProps) => {
         toast.success("OTP sent to your phone!");
       }
     } catch (error) {
-      toast.error("Failed to send OTP. Phone authentication may not be configured.");
+      toast.error(
+        "Failed to send OTP. Phone authentication may not be configured."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -52,7 +53,7 @@ const PhoneAuth = ({ onSuccess }: PhoneAuthProps) => {
       const { error } = await supabase.auth.verifyOtp({
         phone: phoneNumber,
         token: otp,
-        type: 'sms'
+        type: "sms",
       });
 
       if (error) {
@@ -73,7 +74,9 @@ const PhoneAuth = ({ onSuccess }: PhoneAuthProps) => {
       {!isOtpSent ? (
         <>
           <div>
-            <label className="block text-sm font-medium mb-2">Phone Number</label>
+            <label className="block text-sm font-medium mb-2">
+              Phone Number
+            </label>
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
               <Input

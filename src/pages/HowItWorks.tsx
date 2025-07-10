@@ -181,13 +181,13 @@ const HowItWorks = () => (
                 </div>
               </div>
 
-              <div className="w-full md:w-1/2 bg-gray-200 h-80 rounded-lg flex items-center justify-center overflow-hidden">
-                <picture>
+              <div className="w-full md:w-1/2 bg-gray-200 h-80 rounded-lg relative overflow-hidden flex items-center justify-center">
+                <picture className="absolute inset-0 w-full h-full">
                   <source srcSet={studentImgWebp} type="image/webp" />
                   <img
                     src={studentImgJpg}
                     alt="Students using Campus Ride"
-                    className="object-cover w-full h-full"
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
                 </picture>
               </div>
@@ -230,13 +230,13 @@ const HowItWorks = () => (
                 </ul>
               </div>
 
-              <div className="w-full md:w-1/2 bg-gray-200 h-80 rounded-lg flex items-center justify-center overflow-hidden">
-                <picture>
+              <div className="w-full md:w-1/2 bg-gray-200 h-80 rounded-lg relative overflow-hidden flex items-center justify-center">
+                <picture className="absolute inset-0 w-full h-full">
                   <source srcSet={facesImgWebp} type="image/webp" />
                   <img
                     src={facesImgJpg}
                     alt="Uniride safety features"
-                    className="object-cover w-full h-full"
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
                 </picture>
               </div>
@@ -286,6 +286,22 @@ const HowItWorks = () => (
                 </p>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Link to Help/FAQ Section */}
+        <section className="py-12 px-4 bg-white">
+          <div className="max-w-4xl mx-auto text-center">
+            <p className="text-lg text-gray-700">
+              Have more questions? Visit our{" "}
+              <Link
+                to="/help"
+                className="text-black underline hover:text-gray-900 font-medium"
+              >
+                Help &amp; FAQ section
+              </Link>{" "}
+              for answers to common questions about using Uniride.
+            </p>
           </div>
         </section>
 

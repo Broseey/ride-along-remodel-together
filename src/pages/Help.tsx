@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@shared/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,61 +11,161 @@ import supportImgWebp from "@/assets/images/optimized/services-customer-support-
 import supportImgJpg from "@/assets/images/optimized/services-customer-support-help.jpg";
 const Help = () => {
   const currentYear = new Date().getFullYear();
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [openFaq, setOpenFaq] = useState<string | null>(null);
   const [contactLoading, setContactLoading] = useState(false);
   const [contactSuccess, setContactSuccess] = useState<string | null>(null);
   const [contactError, setContactError] = useState<string | null>(null);
 
-  const faqs = [
+  // Track which FAQ categories are expanded
+  const [expandedCategories, setExpandedCategories] = useState<{
+    [key: number]: boolean;
+  }>({});
+
+  const handleToggleCategory = (idx: number) => {
+    setExpandedCategories((prev) => ({ ...prev, [idx]: !prev[idx] }));
+  };
+
+  // Grouped FAQs by category for better organization
+  const groupedFaqs = [
     {
-      question: "How do I book a ride?",
-      answer:
-        "Simply select your departure and destination locations, choose your preferred date and time, select a vehicle, and proceed to payment. Once confirmed, you'll receive booking details.",
+      category: "📦 Booking & Payments",
+      faqs: [
+        {
+          question: "How do I book a ride?",
+          answer:
+            "Simply select your departure and destination locations, choose your preferred date and time, select a vehicle, and proceed to payment. Once confirmed, you'll receive booking details.",
+        },
+        {
+          question: "How much does it cost to book a ride?",
+          answer:
+            "Pricing varies based on the route, vehicle type, and whether you're booking a seat or the entire ride. Full ride bookings receive a 10% discount.",
+        },
+        {
+          question: "Can I join a ride with other students?",
+          answer:
+            "Yes! You can join existing rides with other students heading in the same direction, or book a private ride if you prefer.",
+        },
+        {
+          question: "Can I cancel my booking?",
+          answer:
+            "Yes, you can cancel your booking up to 24 hours before departure for a full refund. Cancellations within 24 hours may incur charges.",
+        },
+        {
+          question: "Do I need an account to book a ride?",
+          answer:
+            "Yes, you need to sign up for a free Uniride account to book rides, manage your bookings, and receive trip updates. It helps ensure a personalized and secure experience.",
+        },
+        {
+          question: "What payment methods do you accept?",
+          answer:
+            "We accept all major payment methods through Paystack, including bank cards, bank transfers, USSD, and QR codes.",
+        },
+        {
+          question: "Can I reschedule a ride after booking?",
+          answer:
+            "Yes. You can reschedule a ride from your dashboard if done at least 24 hours before departure and if an alternative time is available.",
+        },
+        {
+          question: "Can I book a ride for someone else?",
+          answer:
+            "Yes. Just provide the rider’s full name and phone number during booking so they receive the trip details and notifications.",
+        },
+        {
+          question: "How long does it take to receive a refund?",
+          answer:
+            "Refunds are processed within 3–5 business days, depending on your payment method and bank.",
+        },
+      ],
     },
     {
-      question: "How much does it cost to book a ride?",
-      answer:
-        "Pricing varies based on the route, vehicle type, and whether you're booking a seat or the entire ride. Full ride bookings receive a 10% discount.",
+      category: "🛡️ Drivers & Safety",
+      faqs: [
+        {
+          question: "Is Uniride safe?",
+          answer:
+            "Yes, all our drivers are verified with background checks, valid licenses, and insurance. We maintain a 99% safety rating through strict verification processes.",
+        },
+        {
+          question: "How do I become a driver?",
+          answer:
+            "Visit our 'Become a Driver' page, complete the registration form with your license and vehicle details, and wait for verification. Our team will review your application within 3-5 business days.",
+        },
+        {
+          question: "Can I contact my driver before the ride?",
+          answer:
+            "Yes. Once your booking is confirmed, you’ll receive the driver's contact details for direct communication.",
+        },
+        {
+          question: "How are drivers verified?",
+          answer:
+            "All drivers undergo identity verification, license and document checks, and vehicle inspections before being approved to drive on Uniride.",
+        },
+        {
+          question: "What happens if the driver cancels my ride?",
+          answer:
+            "If a driver cancels your ride, we’ll notify you immediately. You’ll either be reassigned to another driver or offered a full refund.",
+        },
+      ],
     },
     {
-      question: "Can I cancel my booking?",
-      answer:
-        "Yes, you can cancel your booking up to 24 hours before departure for a full refund. Cancellations within 24 hours may incur charges.",
+      category: "🧾 Account & Support",
+      faqs: [
+        {
+          question: "How do I reset my password?",
+          answer:
+            "If you've forgotten your password, click the 'Forgot Password' link on the login page and follow the instructions sent to your email.",
+        },
+        {
+          question: "How do I contact support for urgent issues?",
+          answer:
+            "For urgent matters, please call our support line at +234 (0) 800 UNIRIDE during business hours for immediate assistance.",
+        },
+        {
+          question: "Is there a Uniride mobile app?",
+          answer:
+            "Our mobile app is currently in development. In the meantime, you can access all features using your browser on phone or desktop at uniride.ng.",
+        },
+        {
+          question: "Can I get updates about new features or routes?",
+          answer:
+            "Yes. You can subscribe to our newsletter via the website or follow us on Instagram, Twitter, and LinkedIn at @uniride_ng.",
+        },
+      ],
     },
     {
-      question: "How do I become a driver?",
-      answer:
-        "Visit our 'Become a Driver' page, complete the registration form with your license and vehicle details, and wait for verification. Our team will review your application within 3-5 business days.",
+      category: "🎒 Lost & Found",
+      faqs: [
+        {
+          question: "What should I do if I forgot my belongings in the bus?",
+          answer:
+            "If you forgot something in the bus, please contact our support team immediately with your ride details. We will coordinate with the driver to help recover your belongings as quickly as possible.",
+        },
+        {
+          question: "What if I find someone else's belongings in the vehicle?",
+          answer:
+            "If you find a lost item, please inform the driver or contact our support team. We will do our best to return the item to its rightful owner.",
+        },
+        {
+          question: "How do I report a lost or found item?",
+          answer:
+            "You can report lost or found items by emailing support@uniride.ng or using the contact form on this page. Provide as many details as possible to help us assist you.",
+        },
+      ],
     },
     {
-      question: "Is Uniride safe?",
-      answer:
-        "Yes, all our drivers are verified with background checks, valid licenses, and insurance. We maintain a 99% safety rating through strict verification processes.",
-    },
-    {
-      question: "What payment methods do you accept?",
-      answer:
-        "We accept all major payment methods through Paystack, including bank cards, bank transfers, USSD, and QR codes.",
-    },
-    {
-      question: "What should I do if I forgot my belongings in the bus?",
-      answer:
-        "If you forgot something in the bus, please contact our support team immediately with your ride details. We will coordinate with the driver to help recover your belongings as quickly as possible.",
-    },
-    {
-      question: "What if I find someone else's belongings in the vehicle?",
-      answer:
-        "If you find a lost item, please inform the driver or contact our support team. We will do our best to return the item to its rightful owner.",
-    },
-    {
-      question: "How do I report a lost or found item?",
-      answer:
-        "You can report lost or found items by emailing support@uniride.ng or using the contact form on this page. Provide as many details as possible to help us assist you.",
-    },
-    {
-      question: "How do I contact support for urgent issues?",
-      answer:
-        "For urgent matters, please call our support line at +234 (0) 800 UNIRIDE during business hours for immediate assistance.",
+      category: "🌍 General & Availability",
+      faqs: [
+        {
+          question: "Is Uniride available in my university?",
+          answer:
+            "We currently operate in select private universities across Nigeria. During booking, you’ll see available campuses. More universities will be added soon.",
+        },
+        {
+          question: "Can I book a ride from any state?",
+          answer:
+            "Uniride allows rides either from a state to a university or from a university to a state. Routes depend on student demand and verified locations.",
+        },
+      ],
     },
   ];
 
@@ -123,6 +223,22 @@ const Help = () => {
           <meta property="og:type" content="website" />
           <meta property="og:url" content="https://uniride.ng/help" />
           <meta property="og:image" content="/og-cover.png" />
+          <script type="application/ld+json">
+            {JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: groupedFaqs.flatMap((group) =>
+                group.faqs.map((faq) => ({
+                  "@type": "Question",
+                  name: faq.question,
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: faq.answer,
+                  },
+                }))
+              ),
+            })}
+          </script>
         </Helmet>
         <Navbar />
         {/* Hero Section - Modern, Consistent with About/Partner */}
@@ -315,31 +431,66 @@ const Help = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">
                 Frequently Asked Questions
               </h2>
-              <div className="space-y-3">
-                {faqs.map((faq, index) => (
-                  <Card
-                    key={index}
-                    className="hover:shadow-xl transition-shadow border-0 bg-gradient-to-br from-white to-gray-100 rounded-lg cursor-pointer"
-                    onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                  >
-                    <CardHeader className="flex flex-row items-center justify-between p-4">
-                      <CardTitle className="flex items-start gap-3 text-lg">
-                        <HelpCircle className="h-5 w-5 text-black mt-1 flex-shrink-0" />
-                        {faq.question}
-                      </CardTitle>
-                      <span className="ml-2 text-black text-xl select-none">
-                        {openFaq === index ? "−" : "+"}
-                      </span>
-                    </CardHeader>
-                    {openFaq === index && (
-                      <CardContent className="p-4 pt-0">
-                        <p className="text-gray-700 leading-relaxed text-base md:text-lg">
-                          {faq.answer}
-                        </p>
-                      </CardContent>
-                    )}
-                  </Card>
-                ))}
+              <div className="space-y-8">
+                {groupedFaqs.map((group, groupIdx) => {
+                  const isExpanded = expandedCategories[groupIdx];
+                  const visibleFaqs = isExpanded
+                    ? group.faqs
+                    : group.faqs.slice(0, 2);
+                  return (
+                    <div key={group.category}>
+                      <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <span>{group.category}</span>
+                      </h3>
+                      <div className="space-y-3">
+                        {visibleFaqs.map((faq, index) => {
+                          const faqIndex = `${groupIdx}-${index}`;
+                          return (
+                            <Card
+                              key={faqIndex}
+                              className="hover:shadow-xl transition-shadow border-0 bg-gradient-to-br from-white to-gray-100 rounded-lg cursor-pointer"
+                              onClick={() =>
+                                setOpenFaq(
+                                  openFaq === faqIndex ? null : faqIndex
+                                )
+                              }
+                            >
+                              <CardHeader className="flex flex-row items-center justify-between p-4">
+                                <CardTitle className="flex items-start gap-3 text-lg">
+                                  <HelpCircle className="h-5 w-5 text-black mt-1 flex-shrink-0" />
+                                  {faq.question}
+                                </CardTitle>
+                                <span className="ml-2 text-black text-xl select-none">
+                                  {openFaq === faqIndex ? "−" : "+"}
+                                </span>
+                              </CardHeader>
+                              {openFaq === faqIndex && (
+                                <CardContent className="p-4 pt-0">
+                                  <p className="text-gray-700 leading-relaxed text-base md:text-lg">
+                                    {faq.answer}
+                                  </p>
+                                </CardContent>
+                              )}
+                            </Card>
+                          );
+                        })}
+                        {group.faqs.length > 2 && (
+                          <div className="flex justify-center mt-2">
+                            <Button
+                              variant="ghost"
+                              className="text-black underline hover:text-blue-700 text-base font-medium px-4 py-2"
+                              onClick={() => handleToggleCategory(groupIdx)}
+                            >
+                              {isExpanded
+                                ? "Show less"
+                                : `Show all (${group.faqs.length})`}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>

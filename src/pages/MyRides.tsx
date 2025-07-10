@@ -1,8 +1,18 @@
 import React, { useState, useEffect, lazy, Suspense } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@shared/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@shared/components/ui/badge";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@shared/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -23,8 +33,8 @@ import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import Navbar from "@/components/Navbar";
 const RideReceipt = lazy(() => import("@/components/RideReceipt"));
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@shared/contexts/AuthContext";
+import { supabase } from "@shared/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 

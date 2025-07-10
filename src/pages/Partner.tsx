@@ -1,6 +1,11 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@shared/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,8 +27,8 @@ import {
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import handshakeGif from "/src/assets/images/partner-handshake.webp";
+import { supabase } from "@shared/integrations/supabase/client";
+import handshakeGif from "/src/assets/images/partner-handshake.gif";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 
 const Partner = () => {

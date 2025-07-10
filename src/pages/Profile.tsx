@@ -1,12 +1,17 @@
 import React, { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useRides } from "@/hooks/useRides";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@shared/contexts/AuthContext";
+import { useRides } from "@shared/hooks/useRides";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@shared/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@shared/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   User,
@@ -24,10 +29,10 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import MobileNavigation from "@/components/dashboard/MobileNavigation";
-import Footer from "@/components/Footer";
-import { useIsMobile } from "@/hooks/use-mobile";
+import Footer from "@/components/dashboard/Footer";
+import { useIsMobile } from "@shared/hooks/use-mobile";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@shared/integrations/supabase/client";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 
 const Profile = () => {

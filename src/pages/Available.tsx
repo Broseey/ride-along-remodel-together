@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Navbar from "@/components/Navbar";
 import AvailableRides from "@/components/AvailableRides";
 import MobileNavigation from "@/components/dashboard/MobileNavigation";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@shared/hooks/use-mobile";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 
 const Available = () => {

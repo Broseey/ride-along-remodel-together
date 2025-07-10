@@ -1,6 +1,11 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@shared/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -40,6 +45,54 @@ const About = () => {
           <meta property="og:type" content="website" />
           <meta property="og:url" content="https://uniride.ng/about" />
           <meta property="og:image" content="/og-cover.png" />
+          <script type="application/ld+json">
+            {JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: [
+                {
+                  "@type": "Question",
+                  name: "Who owns Uniride?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Uniride is owned and operated by Ambrose Othniel, the Founder & Executive Director, along with a dedicated team passionate about student mobility and safety.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "When was Uniride founded?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Uniride was founded in 2023 to solve the transportation challenges faced by Nigerian university students.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "What is Uniride’s mission?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Our mission is to revolutionize student transportation in Nigeria by providing a safe, affordable, and efficient ride-sharing platform connecting universities with major cities.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "Where does Uniride operate?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Uniride currently operates in select private universities across Nigeria, with plans to expand to more campuses nationwide.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "How can I contact Uniride?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "You can reach us at support@uniride.ng or through our Help page for support and inquiries.",
+                  },
+                },
+              ],
+            })}
+          </script>
         </Helmet>
 
         <Navbar />
@@ -59,8 +112,11 @@ const About = () => {
               About Uniride
             </h1>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Connecting Nigerian students with safe, affordable, and reliable
-              transportation solutions between universities and cities.
+              Uniride is a product of Ride Africa Transport Enterprises, built
+              to solve a real need across Nigerian campuses — safe, simple, and
+              student-focused travel. We’re more than a platform; we’re shaping
+              movement culture for students, backed by a legally registered
+              vision with bold ambitions.
             </p>
           </div>
         </section>
@@ -166,7 +222,7 @@ const About = () => {
                     Ajala Ademide
                   </CardTitle>
                   <p className="text-gray-200 mb-4 font-medium">
-                    Innovative Brand Designer
+                    Brand Symbol Designer
                   </p>
                   <Button
                     onClick={() => setShowDirectorLetter(true)}
@@ -379,7 +435,7 @@ const About = () => {
           <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold text-center">
-                A word from Our Brand Designer
+                A Word from the Brand Symbol Designer
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-6">
@@ -389,59 +445,97 @@ const About = () => {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg">Ademide Ajala</h3>
-                  <p className="text-gray-600">
-                    Innovative Brand Designer, Uniride
-                  </p>
+                  <p className="text-gray-600">Brand Symbol Designer</p>
                 </div>
               </div>
 
               <div className="prose max-w-none">
                 <Quote className="h-8 w-8 text-gray-400 mb-4" />
                 <p className="text-lg leading-relaxed mb-4">
-                  Dear Uniride Community,
-                </p>
-                <p className="mb-4">
-                  As Uniride grows, so does our purpose—not just to move people
-                  from place to place, but to design a future where
-                  transportation feels effortless, personal, and human.
-                </p>
-                <p className="mb-4">
-                  Design at Uniride isn’t just about how things look—it’s about
-                  how they work, how they feel, and how they connect with you.
-                  Every icon, color, layout, and screen is part of a bigger
-                  promise: to make your ride smoother, clearer, and more
-                  intuitive every time you tap the app.
-                </p>
-                <p className="mb-4">
-                  We’re building more than a ride platform—we’re building a
-                  brand you can trust, a space that feels familiar, and a
-                  journey that reflects you. From simplifying the way you book,
-                  to refining the smallest motion in the UI, every decision we
-                  make is guided by your experience and feedback.
-                </p>
-                <p className="mb-4">
-                  This next chapter is about clarity, accessibility, and empathy
-                  in our design. We're reimagining what the Uniride brand stands
-                  for—and you're at the center of it.
-                </p>
-                <p className="mb-4">
-                  Thank you for being part of this journey. I’m excited for
-                  what’s ahead—and I can't wait to show you how we're turning
-                  bold ideas into real impact.
+                  Uniride isn’t just a ride platform — it’s a movement reshaping
+                  how students travel, connect, and feel seen. I had the chance
+                  to contribute to its early identity, crafting a brand symbol
+                  and favicon that capture simplicity, purpose, and clarity. As
+                  the full logo comes to life, I’m excited to help shape how
+                  Uniride is recognized and remembered. This project reflects
+                  what good design should do — quietly empower a bold vision.
                 </p>
                 <p className="font-semibold">
-                  With purpose,
+                  — Ademide Ajala
                   <br />
-                  Ademide Ajala
-                  <br />
-                  Brand Designer
-                  <br />
-                  Uniride
+                  Brand Symbol Designer
                 </p>
               </div>
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* FAQ Section */}
+        <section className="py-20 bg-gray-50">
+          <div className="max-w-3xl mx-auto px-4 md:px-0 text-justify">
+            <h2 className="text-3xl font-bold mb-8 text-center">
+              Frequently Asked Questions
+            </h2>
+            <div className="space-y-8 flex flex-col items-center">
+              <div className="lg:max-w-2xl max-w-xl w-full">
+                <h3 className="font-semibold text-lg mb-2">
+                  Who owns Uniride?
+                </h3>
+                <p className="text-gray-700">
+                  Uniride is owned by its founder, Ambrose Othniel — an
+                  entrepreneurial developer who created the platform to simplify
+                  university travel for students across Nigeria. It is operated
+                  by the Uniride team to ensure rides are safe and easy to book.
+                </p>
+              </div>
+              <div className="lg:max-w-2xl max-w-xl w-full">
+                <h3 className="font-semibold text-lg mb-2">
+                  When was Uniride founded?
+                </h3>
+                <p className="text-gray-700">
+                  Uniride was founded in 2023 to solve the transportation
+                  challenges faced by Nigerian university students.
+                </p>
+              </div>
+              <div className="lg:max-w-2xl max-w-xl w-full">
+                <h3 className="font-semibold text-lg mb-2">
+                  What is Uniride’s mission?
+                </h3>
+                <p className="text-gray-700">
+                  Our mission is to revolutionize student transportation in
+                  Nigeria by providing a safe, affordable, and efficient
+                  ride-sharing platform connecting universities with major
+                  cities.
+                </p>
+              </div>
+              <div className="lg:max-w-2xl max-w-xl w-full">
+                <h3 className="font-semibold text-lg mb-2">
+                  Where does Uniride operate?
+                </h3>
+                <p className="text-gray-700">
+                  Uniride currently operates in select private universities
+                  across Nigeria, with plans to expand to more campuses
+                  nationwide.
+                </p>
+              </div>
+              <div className="lg:max-w-2xl max-w-xl w-full">
+                <h3 className="font-semibold text-lg mb-2">
+                  How can I contact Uniride?
+                </h3>
+                <p className="text-gray-700">
+                  You can reach us at{" "}
+                  <a
+                    href="mailto:support@uniride.ng"
+                    className="text-black underline"
+                  >
+                    support@uniride.ng
+                  </a>{" "}
+                  or through our Help page for support and inquiries.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* CTA Section */}
         <section className="py-20 px-4 bg-white text-black">

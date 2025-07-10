@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@shared/components/ui/card";
 import {
   MapPin,
   Clock,
@@ -17,9 +17,9 @@ import Navbar from "@/components/Navbar";
 import RideBookingFormNew from "@/components/RideBookingFormNew";
 import AvailableRides from "@/components/AvailableRides";
 import Footer from "@/components/Footer";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@shared/contexts/AuthContext";
 import { toast } from "sonner";
-import drivergifImg from "@/assets/images/inacardriving.webp";
+import drivergifImg from "@/assets/images/inacardriving.gif";
 import peopleImg from "@/assets/images/peopeimage.avif";
 import acrossRoadImgWebp from "@/assets/images/optimized/acrossroadImg.webp";
 import acrossRoadImgJpg from "@/assets/images/optimized/acrossroadImg.jpg";
@@ -43,30 +43,39 @@ const Index = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
         <Helmet>
           <title>
-            Uniride - Affordable, Safe, and Reliable Rides Across Nigerian
-            Universities
+            Uniride – Nigeria Student Ride App for Campus to State Travel |
+            Safe, Affordable University Rides
           </title>
           <meta
             name="description"
-            content="Uniride is Nigeria’s university ride-sharing platform connecting students with affordable, safe, and reliable rides. Book or offer rides across private and public universities including ABUAD, Covenant, Babcock, Bowen, and more."
+            content="Uniride is Nigeria’s premier student ride-sharing platform. Book safe, affordable rides between your campus and home—serving major universities nationwide. Join the ride movement!"
+          />
+          <meta
+            name="keywords"
+            content="Uniride, Uniride.ng, Uniride Nigeria, student ride sharing Nigeria, student ride app Nigeria, campus ride Nigeria, university rides in Nigeria, rides for Nigerian students, campus to state travel, student transport Nigeria, university transport Nigeria, safe student travel, affordable student rides, campus carpool Nigeria, Covenant University rides, ABUAD transport, BELLS university transport, Bowen carpool, Babcock rides, Pan-Atlantic university transport, Baze University transport, Nile University rides, book ride university Nigeria"
           />
           <meta
             property="og:title"
-            content="Uniride - Affordable, Safe, and Reliable Rides"
+            content="Uniride – Student Ride App for Campus to State Travel in Nigeria | Affordable, Safe, and Reliable Rides Across Nigerian Universities"
           />
           <meta
             property="og:description"
-            content="Uniride helps students and travelers book or offer rides across Nigerian universities — secure, affordable, and reliable."
+            content="Uniride is Nigeria’s premier student ride-sharing platform. Book safe, affordable rides between your campus and home—serving major universities nationwide. Join the ride movement!"
           />
-          <meta property="og:type" content="website" />
-          <meta property="og:url" content="https://uniride.ng/" />
-          <meta property="og:image" content="/og-cover.png" />
+          <meta
+            name="twitter:title"
+            content="Uniride – Student Ride App for Campus to State Travel in Nigeria | Affordable, Safe, and Reliable Rides Across Nigerian Universities"
+          />
+          <meta
+            name="twitter:description"
+            content="Uniride is Nigeria’s premier student ride-sharing platform. Book safe, affordable rides between your campus and home—serving major universities nationwide. Join the ride movement!"
+          />
         </Helmet>
 
         <Navbar />
 
         {/* Hero Section */}
-        <div className="container mx-auto px-4 md:pr-4 py-12">
+        <div className="container mx-auto px-4 lg:pl-8 py-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left Column - Content */}
             <div className="space-y-8 w-full">
@@ -98,17 +107,18 @@ const Index = () => {
 
                   {/* Right: Real Hero Image */}
                   <div className="relative w-full md:w-2/3 h-48 md:h-56 flex items-center justify-center"></div>
-                   <div className="absolute inset-0 w-full h-full">
-                  <picture>
-                    <source srcSet={acrossRoadImgWebp} type="image/webp" />
-                    <img
-                      src={acrossRoadImgJpg}
-                      alt="Students sharing a ride"
-                      className="object-cover w-full h-full rounded-2xl shadow-md border border-gray-100"
-                      style={{ objectPosition: "50% top" }}
-                    />
-                  </picture>
-                  <div className="absolute inset-0 bg-[#111111] bg-opacity-40 rounded-2xl"></div></div>
+                  <div className="absolute inset-0 w-full h-full">
+                    <picture>
+                      <source srcSet={acrossRoadImgWebp} type="image/webp" />
+                      <img
+                        src={acrossRoadImgJpg}
+                        alt="Students sharing a ride"
+                        className="object-cover w-full h-full rounded-2xl shadow-md border border-gray-100"
+                        style={{ objectPosition: "50% top" }}
+                      />
+                    </picture>
+                    <div className="absolute inset-0 bg-[#111111] bg-opacity-40 rounded-2xl"></div>
+                  </div>
                 </div>
 
                 {/* Remove quick action buttons on mobile for a cleaner look */}

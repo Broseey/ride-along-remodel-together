@@ -6,9 +6,9 @@ import {
   CardTitle,
   CardContent,
   CardDescription,
-} from "@/components/ui/card";
+} from "@shared/components/ui/card";
 import { ChevronRight } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@shared/integrations/supabase/client";
 
 interface QuickRoute {
   id: string;

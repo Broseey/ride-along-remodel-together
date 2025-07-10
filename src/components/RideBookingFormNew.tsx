@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@shared/components/ui/card";
 import {
   MapPin,
   Calendar,
@@ -16,7 +16,12 @@ import {
   Eye,
   X,
 } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@shared/components/ui/tabs";
 import {
   Popover,
   PopoverContent,
@@ -43,10 +48,10 @@ import LocationSearchInput from "@/components/LocationSearchInput";
 import MapLocationPicker from "@/components/MapLocationPicker";
 import PaystackPayment from "@/components/PaystackPayment";
 import VehicleOptions from "@/components/VehicleOptions";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@shared/contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@shared/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import type { Ride as RideBase } from "@/types/ride";
 import { motion, AnimatePresence } from "framer-motion";

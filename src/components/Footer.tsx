@@ -192,8 +192,12 @@ const Footer = () => {
         </div>
         {/* Divider */}
         <div className=" mt-20 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="text-xs text-gray-400">
+          <div className="text-xs text-gray-400 text-center md:text-left">
             © {currentYear} Uniride. All rights reserved.
+            <br />
+            <span className="powered-by text-xs text-gray-400">
+              A service by Ride Africa Transport Enterprises.
+            </span>
           </div>
           <div className="flex flex-wrap gap-8 text-xs">
             <Link

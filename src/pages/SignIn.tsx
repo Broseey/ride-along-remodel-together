@@ -11,7 +11,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@shared/components/ui/card";
 import {
   Form,
   FormControl,
@@ -23,7 +23,7 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@shared/contexts/AuthContext";
 import { toast } from "sonner";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 

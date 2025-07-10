@@ -1,0 +1,3 @@
+# robots.txt for uniride.ng admin
+User-agent: *
+Disallow: /

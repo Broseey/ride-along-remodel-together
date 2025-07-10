@@ -4,8 +4,8 @@ import DesktopMenu from "./navbar/DesktopMenu";
 import MobileMenu from "./navbar/MobileMenu";
 import AuthButtons from "./navbar/AuthButtons";
 import { useMenuItems } from "./navbar/useMenuItems";
-import { useAuth } from "@/contexts/AuthContext";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@shared/contexts/AuthContext";
+import { useIsMobile } from "@shared/hooks/use-mobile";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -31,7 +31,7 @@ const Navbar = () => {
   const menuItems = useMenuItems(isAuthenticated, userType);
 
   return (
-    <nav className="bg-black py-4 px-6">
+    <nav className="bg-black py-4 px-6" aria-label="Main navigation">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <div className="flex items-center">
           <Link to="/">

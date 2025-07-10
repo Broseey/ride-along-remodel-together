@@ -23,8 +23,14 @@
 
     "baseUrl": ".",
     "paths": {
+      "@shared/*": ["shared/*"],
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "shared/components/ui/card.tsx",
+    "shared/components/ui/tabs.tsx",
+    "src/integrations/supabase"
+, "shared/contexts", "shared/hooks", "shared/components/ui/badge.tsx"  ]
 }

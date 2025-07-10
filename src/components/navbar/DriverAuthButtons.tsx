@@ -3,7 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import DriverUserMenu from "./DriverUserMenu";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@shared/contexts/AuthContext";
 
 interface DriverAuthButtonsProps {
   isMobile?: boolean;

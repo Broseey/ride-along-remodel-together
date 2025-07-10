@@ -5,7 +5,7 @@ import DesktopMenu from "./DesktopMenu";
 import MobileMenu from "./MobileMenu";
 import DriverAuthButtons from "./DriverAuthButtons";
 import { useMenuItems } from "./useMenuItems";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@shared/contexts/AuthContext";
 
 const DriverNavbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

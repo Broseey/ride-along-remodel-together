@@ -9,14 +9,14 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@shared/components/ui/card";
 import { Clock, MapPin } from "lucide-react";
 import { format } from "date-fns";
 import RideBookingFormNew from "@/components/RideBookingFormNew";
 import { Link } from "react-router-dom";
 import MobileNavigation from "@/components/dashboard/MobileNavigation";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { supabase } from "@/integrations/supabase/client";
+import { useIsMobile } from "@shared/hooks/use-mobile";
+import { supabase } from "@shared/integrations/supabase/client";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 
 interface PopularRoute {
@@ -139,7 +139,9 @@ const Schedule = () => {
                 <CardContent>
                   <div className="space-y-4">
                     {loadingPopular ? (
-                      <div className="text-center text-gray-400">Loading...</div>
+                      <div className="text-center text-gray-400">
+                        Loading...
+                      </div>
                     ) : popularRoutes.length === 0 ? (
                       <div className="text-center text-gray-400">
                         No popular routes found.
@@ -180,7 +182,10 @@ const Schedule = () => {
         </div>
         {isMobile && (
           <div className="fixed bottom-0 left-0 right-0 z-50">
-            <MobileNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+            <MobileNavigation
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+            />
           </div>
         )}
       </div>

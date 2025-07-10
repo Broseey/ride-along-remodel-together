@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import UserMenu from "./UserMenu";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@shared/contexts/AuthContext";
 
 interface AuthButtonsProps {
   isMobile?: boolean;
@@ -23,12 +23,15 @@ const AuthButtons = ({
   const buttonClasses = isMobile ? "text-sm px-3 py-1" : "";
 
   return (
-    <div className="flex items-center space-x-2">
+    <div
+      className="flex items-center space-x-2"
+      aria-label="Authentication buttons"
+    >
       <Link to={overrideAuthLinks?.signIn || "/signin"}>
         <Button
           variant="ghost"
           size={buttonSize}
-          className={`text-white hover:bg-white/10 font-medium border-none ${buttonClasses}`}
+          className={`text-white hover:bg-transparent hover:text-gray-300 font-medium border-none ${buttonClasses}`}
         >
           Log in
         </Button>

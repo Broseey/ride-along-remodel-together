@@ -8,7 +8,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@shared/components/ui/card";
 import {
   Form,
   FormControl,
@@ -21,10 +21,11 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@shared/integrations/supabase/client";
 import { Building2, Mail, Phone, Globe, FileText } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { Helmet, HelmetProvider } from "react-helmet-async";
+import Footer from "@/components/Footer";
 
 const formSchema = z.object({
   companyName: z.string().min(2, "Company name must be at least 2 characters"),
@@ -80,6 +81,8 @@ const JoinAsCompany = () => {
       setIsLoading(false);
     }
   };
+
+  const isMobile = window.innerWidth < 768;
 
   return (
     <HelmetProvider>
@@ -283,6 +286,7 @@ const JoinAsCompany = () => {
             </div>
           </div>
         </div>
+        <Footer />
       </>
     </HelmetProvider>
   );

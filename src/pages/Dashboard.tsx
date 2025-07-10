@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@shared/hooks/use-mobile";
 import WelcomeHeader from "@/components/dashboard/WelcomeHeader";
 import QuickActions from "@/components/dashboard/QuickActions";
 import UpcomingRide from "@/components/dashboard/UpcomingRide";
@@ -10,13 +10,18 @@ import AccountLinks from "@/components/dashboard/AccountLinks";
 import RealTimeStatus from "@/components/dashboard/RealTimeStatus";
 import MobileNavigation from "@/components/dashboard/MobileNavigation";
 import Footer from "@/components/dashboard/Footer";
-import { useAuth } from "@/contexts/AuthContext";
-import { useRides } from "@/hooks/useRides";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@shared/contexts/AuthContext";
+import { useRides } from "@shared/hooks/useRides";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@shared/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { CalendarPlus, Clock, MapPin } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@shared/integrations/supabase/client";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 
 const Dashboard = () => {
