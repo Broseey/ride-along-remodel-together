@@ -49,6 +49,8 @@ const PricingManagement = () => {
     base_price: "",
   });
   const [pricingMode, setPricingMode] = useState<"route" | "vehicle">("route");
+
+  // Add a ref to store input refs for each editing item
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   // Fetch enabled states from Supabase
@@ -547,7 +549,10 @@ const PricingManagement = () => {
                             onClick={() => {
                               const inputElem = inputRefs.current[item.id];
                               if (inputElem) {
-                                handlePriceUpdate(item.id, inputElem.value);
+                                handlePriceUpdate(
+                                  item.id,
+                                  inputElem.value
+                                );
                               }
                             }}
                           >
