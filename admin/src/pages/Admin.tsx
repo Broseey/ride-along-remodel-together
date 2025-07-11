@@ -1,11 +1,8 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@shared/contexts/AuthContext";
-import { supabase } from "@shared/integrations/supabase/client"; // adjust path if needed
 
 const Admin = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   useEffect(() => {
     // Redirect all admin OAuth callbacks to /callback for unified handling

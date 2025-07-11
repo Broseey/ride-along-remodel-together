@@ -11,13 +11,14 @@ import {
   CardTitle,
 } from "@shared/components/ui/card";
 import { toast } from "sonner";
-import { Shield } from "lucide-react";
+import { Shield, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@shared/integrations/supabase/client";
 
 const AdminSignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,7 +50,7 @@ const AdminSignIn = () => {
           toast.error("Access denied. Admin privileges required.");
         }
       }
-    } catch (error: any) {
+    } catch (error) {
       toast.error("An unexpected error occurred");
       console.error("Admin sign in error:", error);
     } finally {
@@ -80,16 +81,29 @@ const AdminSignIn = () => {
                 required
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 relative">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              <button
+                type="button"
+                className="absolute right-3 top-9 text-gray-500 hover:text-black"
+                tabIndex={-1}
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <Eye className="h-5 w-5" />
+                ) : (
+                  <EyeOff className="h-5 w-5" />
+                )}
+              </button>
             </div>
             <Button
               type="submit"

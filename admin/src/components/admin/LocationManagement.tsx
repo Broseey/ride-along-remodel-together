@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "@shared/components/ui/card";
+import { Button } from "@shared/components/ui/button";
+import { Input } from "@shared/components/ui/input";
+import { Label } from "@shared/components/ui/label";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "shared/components/ui/tabs";
-import { Trash2, Plus, Edit, Save, X } from "lucide-react";
+} from "@shared/components/ui/tabs";
+import { Trash2, Plus, Edit, Save } from "lucide-react";
 import { toast } from "sonner";
 
 interface University {
@@ -83,7 +83,6 @@ const LocationManagement = () => {
     null
   );
   const [editingState, setEditingState] = useState<string | null>(null);
-  const [editingPricing, setEditingPricing] = useState<string | null>(null);
 
   const [newUniversity, setNewUniversity] = useState({ name: "", state: "" });
   const [newState, setNewState] = useState({ name: "" });
@@ -171,16 +170,6 @@ const LocationManagement = () => {
       });
       toast.success("Pricing rule added successfully");
     }
-  };
-
-  const updatePricingRule = (id: string, updates: Partial<PricingRule>) => {
-    setPricingRules(
-      pricingRules.map((rule) =>
-        rule.id === id ? { ...rule, ...updates } : rule
-      )
-    );
-    setEditingPricing(null);
-    toast.success("Pricing rule updated successfully");
   };
 
   const deletePricingRule = (id: string) => {

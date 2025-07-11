@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -47,7 +47,7 @@ const RealTimeLocationManager = () => {
       setNewState("");
       toast.success("State added successfully");
     },
-    onError: (error) => {
+    onError: () => {
       toast.error("Failed to add state");
     },
   });
@@ -65,7 +65,7 @@ const RealTimeLocationManager = () => {
       setNewUniversity("");
       toast.success("University added successfully");
     },
-    onError: (error) => {
+    onError: () => {
       toast.error("Failed to add university");
     },
   });

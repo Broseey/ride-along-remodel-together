@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import {
   Card,
   CardContent,
@@ -6,8 +5,6 @@ import {
   CardTitle,
 } from "@shared/components/ui/card";
 import { Badge } from "@shared/components/ui/badge";
-import { Button } from "@shared/components/ui/button";
-import { Eye, MapPin, Users, Calendar, Clock } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@shared/integrations/supabase/client";
 import { format } from "date-fns";

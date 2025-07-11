@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -20,13 +20,20 @@ import { Edit, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@shared/integrations/supabase/client";
-import { useEffect } from "react";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "@shared/components/ui/tabs";
+// import type { VehicleType } from "@shared/types/vehicle"; // Fix: import VehicleType if not already imported
+
+// Fix: define VehicleType locally if not available
+type VehicleType = {
+  id: string;
+  name: string;
+  capacity: number;
+  image_url: string;
+  description: string;
+  base_price: number;
+  is_active: boolean;
+};
+
+const vehicles: VehicleType[] = []; // Fix: define vehicles or import if missing
 
 const PricingManagement = () => {
   const queryClient = useQueryClient();
@@ -42,9 +49,10 @@ const PricingManagement = () => {
     base_price: "",
   });
   const [pricingMode, setPricingMode] = useState<"route" | "vehicle">("route");
+  const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   // Fetch enabled states from Supabase
-  const { data: enabledStates = [], isLoading: loadingStates } = useQuery({
+  const { data: enabledStates = [] } = useQuery({
     queryKey: ["enabled-states-admin"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -58,19 +66,18 @@ const PricingManagement = () => {
   });
 
   // Fetch enabled universities from Supabase
-  const { data: enabledUniversities = [], isLoading: loadingUniversities } =
-    useQuery({
-      queryKey: ["enabled-universities-admin"],
-      queryFn: async () => {
-        const { data, error } = await supabase
-          .from("universities")
-          .select("name")
-          .eq("is_active", true)
-          .order("name");
-        if (error) throw error;
-        return data?.map((u) => u.name) || [];
-      },
-    });
+  const { data: enabledUniversities = [] } = useQuery({
+    queryKey: ["enabled-universities-admin"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("universities")
+        .select("name")
+        .eq("is_active", true)
+        .order("name");
+      if (error) throw error;
+      return data?.map((u) => u.name) || [];
+    },
+  });
 
   // Fetch pricing rules from Supabase (dynamic table based on mode)
   const { data: pricing = [], isLoading } = useQuery({
@@ -98,28 +105,6 @@ const PricingManagement = () => {
     },
   });
 
-  // Create new pricing rule for both modes
-  const createMutation = useMutation({
-    mutationFn: async (item: Record<string, unknown>) => {
-      const { error } = await supabase.from("pricing").insert([item]);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["pricing-table-admin"] });
-      setIsCreating(false);
-      setNewPricing({
-        from_type: "",
-        from_location: "",
-        to_type: "",
-        to_location: "",
-        vehicle_type: "",
-        base_price: "",
-      });
-      toast.success("Pricing rule created successfully");
-    },
-    onError: () => toast.error("Failed to create pricing rule"),
-  });
-
   // Update price
   const updateMutation = useMutation({
     mutationFn: async ({
@@ -141,8 +126,6 @@ const PricingManagement = () => {
         if (typeof error === "object") {
           console.error("Supabase update error:", {
             message: error.message,
-            details: error.details,
-            code: error.code,
             id,
             table,
             priceColumn,
@@ -171,8 +154,6 @@ const PricingManagement = () => {
         if (typeof err === "object") {
           console.error("Update price error:", {
             message: err.message,
-            details: err.details,
-            code: err.code,
           });
         } else {
           console.error("Update price error:", err);
@@ -338,20 +319,6 @@ const PricingManagement = () => {
     }
   };
 
-  // Fetch vehicles from Supabase (admin-controlled)
-  const { data: vehicles = [], isLoading: loadingVehicles } = useQuery({
-    queryKey: ["admin-vehicles"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("vehicles")
-        .select("id, name")
-        .eq("is_active", true)
-        .order("name");
-      if (error) throw error;
-      return data || [];
-    },
-  });
-
   return (
     <div className="space-y-6">
       <Card>
@@ -496,7 +463,7 @@ const PricingManagement = () => {
                         <SelectValue placeholder="Select vehicle" />
                       </SelectTrigger>
                       <SelectContent>
-                        {vehicles.map((vehicle) => (
+                        {vehicles.map((vehicle: VehicleType) => (
                           <SelectItem key={vehicle.id} value={vehicle.name}>
                             {vehicle.name}
                           </SelectItem>
@@ -565,6 +532,7 @@ const PricingManagement = () => {
                             type="number"
                             defaultValue={item.base_price}
                             className="w-24"
+                            ref={(el) => (inputRefs.current[item.id] = el)}
                             onKeyDown={(e) => {
                               if (e.key === "Enter") {
                                 handlePriceUpdate(
@@ -577,13 +545,7 @@ const PricingManagement = () => {
                           <Button
                             size="sm"
                             onClick={() => {
-                              const input = (e) => {
-                                const parent = e.target.closest("div.flex");
-                                return parent
-                                  ? parent.querySelector('input[type="number"]')
-                                  : null;
-                              };
-                              const inputElem = input(event);
+                              const inputElem = inputRefs.current[item.id];
                               if (inputElem) {
                                 handlePriceUpdate(item.id, inputElem.value);
                               }

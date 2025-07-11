@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import {
   Card,
   CardContent,
@@ -21,7 +20,6 @@ import {
 } from "lucide-react";
 import AdminNavbar from "@/components/admin/AdminNavbar";
 import RideManagement from "@/components/admin/RideManagement";
-import RealTimeLocationManager from "@/components/admin/RealTimeLocationManager";
 import CreateRide from "@/components/admin/CreateRide";
 import PricingManagement from "@/components/admin/PricingManagement";
 import UniversityStateManager from "@/components/admin/UniversityStateManager";
@@ -32,6 +30,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@shared/integrations/supabase/client";
 import { Badge } from "@shared/components/ui/badge";
 import { Helmet, HelmetProvider } from "react-helmet-async";
+import { useState } from "react";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");

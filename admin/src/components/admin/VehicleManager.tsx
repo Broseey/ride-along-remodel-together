@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@shared/integrations/supabase/client";
 import {
@@ -14,7 +14,18 @@ import { Switch } from "@shared/components/ui/switch";
 import { Edit, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
-const initialVehicle = {
+// Fix: define VehicleType locally if not available
+type VehicleType = {
+  id?: number;
+  name: string;
+  capacity: number;
+  image_url: string;
+  description: string;
+  base_price: number;
+  is_active: boolean;
+};
+
+const initialVehicle: VehicleType = {
   name: "",
   capacity: 4,
   image_url: "",
@@ -26,7 +37,7 @@ const initialVehicle = {
 const VehicleManager = () => {
   const queryClient = useQueryClient();
   const [isCreating, setIsCreating] = useState(false);
-  const [editingId, setEditingId] = useState(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState(initialVehicle);
 
   // Fetch vehicles
@@ -44,8 +55,9 @@ const VehicleManager = () => {
 
   // Create or update vehicle
   const upsertMutation = useMutation({
-    mutationFn: async (vehicle) => {
-      let payload = { ...vehicle };
+    mutationFn: async (vehicle: VehicleType) => {
+      // Fix: ensure payload is an object
+      const payload: VehicleType = { ...vehicle };
       if (editingId) payload.id = editingId;
       const { error } = await supabase.from("vehicles").upsert([payload]);
       if (error) throw error;
@@ -62,7 +74,7 @@ const VehicleManager = () => {
 
   // Delete vehicle
   const deleteMutation = useMutation({
-    mutationFn: async (id) => {
+    mutationFn: async (id: number) => {
       const { error } = await supabase.from("vehicles").delete().eq("id", id);
       if (error) throw error;
     },
@@ -73,8 +85,9 @@ const VehicleManager = () => {
     onError: () => toast.error("Failed to delete vehicle"),
   });
 
-  const handleEdit = (vehicle) => {
-    setEditingId(vehicle.id);
+  const handleEdit = (vehicle: VehicleType) => {
+    // Fix: fallback to null if vehicle.id is undefined
+    setEditingId(vehicle.id ?? null);
     setForm({
       name: vehicle.name,
       capacity: vehicle.capacity,
@@ -86,7 +99,7 @@ const VehicleManager = () => {
     setIsCreating(true);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!form.name || !form.capacity) {
       toast.error("Name and capacity are required");
@@ -181,7 +194,10 @@ const VehicleManager = () => {
                 />
               </div>
               <div className="col-span-full flex gap-2 mt-4">
-                <Button type="submit" disabled={upsertMutation.isLoading}>
+                <Button
+                  type="submit"
+                  disabled={upsertMutation.status === "pending"}
+                >
                   {editingId ? "Update" : "Create"}
                 </Button>
                 <Button

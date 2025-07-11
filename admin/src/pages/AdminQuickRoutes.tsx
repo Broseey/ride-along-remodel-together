@@ -1,4 +1,3 @@
-import React from "react";
 import AdminQuickRoutes from "@/components/admin/AdminQuickRoutes";
 
 const AdminQuickRoutesPage = () => {

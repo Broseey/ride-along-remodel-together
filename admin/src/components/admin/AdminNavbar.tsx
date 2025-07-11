@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import { LogOut, ShieldCheck } from "lucide-react";
 import { useAuth } from "@shared/contexts/AuthContext";
@@ -10,7 +9,10 @@ const AdminNavbar: React.FC = () => {
     <nav className="w-full bg-black text-white shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-6 py-3">
         <div className="flex items-center gap-4 md:gap-6">
-          <Link to="/admin-dashboard" className="flex items-center gap-2 font-bold text-xl tracking-tight text-white">
+          <Link
+            to="/admin-dashboard"
+            className="flex items-center gap-2 font-bold text-xl tracking-tight text-white"
+          >
             <ShieldCheck className="h-6 w-6 text-white" />
             <span>Uniride Admin</span>
           </Link>

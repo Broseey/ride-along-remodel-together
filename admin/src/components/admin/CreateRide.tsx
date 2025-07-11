@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Card,
   CardContent,
@@ -15,8 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@shared/components/ui/select";
-import { Textarea } from "@shared/components/ui/textarea";
-import { Plus, MapPin, Calendar, Clock, Users, DollarSign } from "lucide-react";
+import { Plus, Calendar, Clock, Users, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@shared/integrations/supabase/client";
@@ -30,8 +28,6 @@ interface CreateRideFormData {
   departureTime: string;
   totalSeats: string;
   price: string;
-  vehicleType: string;
-  description: string;
 }
 
 const CreateRide = () => {
@@ -76,14 +72,7 @@ const CreateRide = () => {
         const year = yearRaw.length === 2 ? "20" + yearRaw : yearRaw;
         isoDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
       }
-      const {
-        fromLocation,
-        toLocation,
-        price,
-        vehicleType,
-        description,
-        departureTime,
-      } = data;
+      const { fromLocation, toLocation, price, departureTime } = data;
       const { data: rideData, error } = await supabase
         .from("rides")
         .insert({
@@ -131,8 +120,6 @@ const CreateRide = () => {
       departureTime: "",
       totalSeats: "",
       price: "",
-      vehicleType: "",
-      description: "",
     },
   });
 
@@ -311,48 +298,6 @@ const CreateRide = () => {
                 </p>
               </div>
             </div>
-
-            {/* Restrict vehicleType select to admin-specified types only */}
-            <div className="space-y-2">
-              <Label htmlFor="vehicleType">Vehicle Type *</Label>
-              <Controller
-                name="vehicleType"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    required
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select vehicle" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Coaster bus">Coaster bus</SelectItem>
-                      <SelectItem value="Hiace Bus">Hiace Bus</SelectItem>
-                      <SelectItem value="Sienna">Sienna</SelectItem>
-                      <SelectItem value="Sedan">Sedan</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description (Optional)</Label>
-            <Controller
-              name="description"
-              control={control}
-              render={({ field }) => (
-                <Textarea
-                  {...field}
-                  id="description"
-                  placeholder="Additional details about the ride..."
-                  rows={3}
-                />
-              )}
-            />
           </div>
 
           <Button
