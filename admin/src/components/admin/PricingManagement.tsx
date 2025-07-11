@@ -549,10 +549,7 @@ const PricingManagement = () => {
                             onClick={() => {
                               const inputElem = inputRefs.current[item.id];
                               if (inputElem) {
-                                handlePriceUpdate(
-                                  item.id,
-                                  inputElem.value
-                                );
+                                handlePriceUpdate(item.id, inputElem.value);
                               }
                             }}
                           >

@@ -13,6 +13,18 @@ import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@shared/integrations/supabase/client";
 
+interface StateType {
+  id: string;
+  name: string;
+  is_active: boolean;
+}
+
+interface UniversityType {
+  id: string;
+  name: string;
+  is_active: boolean;
+}
+
 const RealTimeLocationManager = () => {
   const [newState, setNewState] = useState("");
   const [newUniversity, setNewUniversity] = useState("");
@@ -23,13 +35,12 @@ const RealTimeLocationManager = () => {
     queryKey: ["admin-locations"],
     queryFn: async () => {
       const [statesResult, universitiesResult] = await Promise.all([
-        supabase.from("nigerian_states").select("*").order("name"),
-        supabase.from("nigerian_universities").select("*").order("name"),
+        supabase.from("nigerian_states").select("*"),
+        supabase.from("nigerian_universities").select("*"),
       ]);
-
       return {
-        states: statesResult.data || [],
-        universities: universitiesResult.data || [],
+        states: (statesResult.data || []) as StateType[],
+        universities: (universitiesResult.data || []) as UniversityType[],
       };
     },
   });
@@ -174,7 +185,7 @@ const RealTimeLocationManager = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-            {locations?.states.map((state: any) => (
+            {locations?.states.map((state: StateType) => (
               <div
                 key={state.id}
                 className="flex items-center justify-between p-2 border rounded"
@@ -244,7 +255,7 @@ const RealTimeLocationManager = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-            {locations?.universities.map((university: any) => (
+            {locations?.universities.map((university: UniversityType) => (
               <div
                 key={university.id}
                 className="flex items-center justify-between p-2 border rounded"
