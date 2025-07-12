@@ -12,4 +12,18 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ["react", "react-dom"],
+          vendor: [
+            "@tanstack/react-query",
+            "date-fns",
+            "@supabase/supabase-js",
+          ],
+        },
+      },
+    },
+  },
 });
