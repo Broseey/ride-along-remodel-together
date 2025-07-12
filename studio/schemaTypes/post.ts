@@ -49,6 +49,33 @@ export default defineType({
       title: 'Body',
       type: 'blockContent',
     }),
+    defineField({
+      name: 'seo',
+      title: 'SEO',
+      type: 'object',
+      options: {collapsible: true, collapsed: true},
+      fields: [
+        {
+          name: 'metaTitle',
+          type: 'string',
+          title: 'Meta Title',
+          description: 'Custom title for SEO (optional)',
+        },
+        {
+          name: 'metaDescription',
+          type: 'text',
+          title: 'Meta Description',
+          description: 'Brief summary for search engines (optional)',
+        },
+        {
+          name: 'ogImage',
+          type: 'image',
+          title: 'Social Share Image (OG)',
+          description: 'Image shown when shared on social media',
+          options: {hotspot: true},
+        },
+      ],
+    }),
   ],
 
   preview: {
